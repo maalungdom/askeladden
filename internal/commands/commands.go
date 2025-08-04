@@ -34,7 +34,7 @@ func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.Message
 	for _, cmd := range commands {
 		for _, alias := range cmd.aliases {
 			if alias == commandWithoutPrefix {
-				cmd.handler(s, m, bot)
+					cmd.handler(s, m, bot)
 				return
 			}
 		}

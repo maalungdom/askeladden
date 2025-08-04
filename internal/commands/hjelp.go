@@ -6,6 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"roersla.no/askeladden/internal/bot"
+	"roersla.no/askeladden/internal/bot/services"
 )
 
 func init() {
@@ -14,7 +15,7 @@ func init() {
 		description: "Vis denne hjelpemeldinga",
 		emoji:       "❓",
 		handler:   Hjelp,
-		aliases:     []string{"!help", "!h"},
+		aliases:     []string{"help", "h"},
 	}
 }
 

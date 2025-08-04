@@ -17,7 +17,7 @@ type Bot struct {
 
 // New creates a new Bot instance.
 func New(cfg *config.Config, db *database.DB, session *discordgo.Session) *Bot {
-	return &Bot{
+return &Bot{
 		Session:  session,
 		Config:   cfg,
 		Database: db,
@@ -26,12 +26,15 @@ func New(cfg *config.Config, db *database.DB, session *discordgo.Session) *Bot {
 
 // Start starts the bot.
 func (b *Bot) Start() error {
+	log.Println("[BOT] Attempting to connect to Discord...")
 	// Open connection
 	err := b.Session.Open()
 	if err != nil {
+		log.Printf("[BOT] Failed to open Discord session: %v", err)
 		return err
 	}
 
+	log.Println("[BOT] Discord session opened successfully")
 	log.Println("[BOT] Askeladden is running and ready to handle messages.")
 	return nil
 }
@@ -39,9 +42,7 @@ func (b *Bot) Start() error {
 // Stop stops the bot.
 func (b *Bot) Stop() error {
 	log.Println("[BOT] Askeladden is logging off.")
-	if b.Config.Discord.LogChannelID != "" {
-		b.Session.ChannelMessageSend(b.Config.Discord.LogChannelID, "Askeladden is logging off. Goodbye! 👋")
-	}
+	// Log channel message will be sent from main.go before calling Stop()
 
 	// Close database connection
 	if b.Database != nil {
@@ -62,7 +63,6 @@ func (b *Bot) GetDatabase() *database.DB {
 }
 
 
-// GetSession returns the bot's Discord session.
 func (b *Bot) GetSession() *discordgo.Session {
 	return b.Session
 }
@@ -72,6 +72,7 @@ type BotIface interface {
 	GetConfig() *config.Config
 	GetDatabase() *database.DB
 	GetSession() *discordgo.Session
+	Start() error
 	Stop() error
 }
 

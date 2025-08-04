@@ -1,4 +1,3 @@
-
 package commands
 
 import (
@@ -8,6 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"roersla.no/askeladden/internal/bot"
+	"roersla.no/askeladden/internal/bot/services"
 )
 
 func init() {
@@ -15,8 +15,8 @@ func init() {
 		name:        "!spør",
 		description: "Legg til eit spørsmål for daglege spørsmål",
 		emoji:       "❓",
-		handler:   Spor,
-		aliases:     []string{"!spor"},
+		handler:     Spor,
+		aliases:     []string{"spor"},
 	}
 }
 
@@ -39,11 +39,7 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
 	}
 
 	// Send bekreftelse til brukaren
-	embed := &discordgo.MessageEmbed{
-		Title:       "📝 Spørsmål motteke!",
-		Description: fmt.Sprintf("Takk! Spørsmålet ditt er sendt til godkjenning: \"%s\"\n\n*Du vil få ei melding når det blir godkjent av opplysarane våre! ✨*", question),
-		Color:       0x0099ff, // Blue color
-	}
+	embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Takk! Spørsmålet ditt er sendt til godkjenning: \"%s\"\n\n*Du vil få ei melding når det blir godkjent av opplysarane våre! ✨*", question), 0x0099ff)
 	response, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	if err != nil {
 		log.Printf("Feil ved sending av melding: %v", err)
@@ -67,17 +63,6 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
 	}
 
 	// Send question to the approval queue channel
-	if bot.GetConfig().Approval.QueueChannelID != "" {
-		approvalMessageText := fmt.Sprintf(`Nytt spørsmål frå %s ventar på godkjenning:
-
-> %s
-
-*Spørsmål-ID: %d*`, m.Author.Username, question, questionID)
-		approvalMessage, err := s.ChannelMessageSend(bot.GetConfig().Approval.QueueChannelID, approvalMessageText)
-		if err != nil {
-			log.Printf("Failed to send question to approval queue: %v", err)
-		} else {
-			db.UpdateApprovalMessageID(int(questionID), approvalMessage.ID)
-		}
-	}
+	approvalService := &services.ApprovalService{Bot: bot}
+	approvalService.PostNewQuestionToApprovalQueue(questionID)
 }

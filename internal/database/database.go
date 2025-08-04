@@ -6,9 +6,29 @@ import (
 	"log"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	_ "github.com/go-sql-driver/mysql"
 	"roersla.no/askeladden/internal/config"
 )
+
+type DatabaseIface interface {
+	AddQuestion(question, authorID, authorName, messageID, channelID string) (int64, error)
+	GetQuestionByMessageID(messageID string) (*Question, error)
+	ApproveQuestion(questionID int, approverID string) error
+	GetPendingQuestion() (*Question, error)
+	UpdateApprovalMessageID(questionID int, approvalMessageID string) error
+	GetQuestionByApprovalMessageID(approvalMessageID string) (*Question, error)
+	GetPendingQuestionByID(questionID int) (*Question, error)
+	GetApprovalStats() (int, int, int, error)
+	GetLeastAskedApprovedQuestion() (*Question, error)
+	IncrementQuestionUsage(questionID int) error
+	GetApprovedQuestionStats() (int, int, int, error)
+	Close() error
+	ClearDatabase() error
+}
+
+// DB struct implements the DatabaseIface
+var _ DatabaseIface = (*DB)(nil)
 
 type DB struct {
 	conn *sql.DB
@@ -84,7 +104,7 @@ type Question struct {
 	MessageID        string
 	ChannelID        string
 	ApprovalStatus   string
-	ApprovalMessageID string
+	ApprovalMessageID *string
 	ApprovedBy       *string
 	ApprovedAt       *time.Time
 }
@@ -105,6 +125,11 @@ func (db *DB) AddQuestion(question, authorID, authorName, messageID, channelID s
 	}
 	log.Printf("Successfully added question with ID %d", id)
 	return id, nil
+}
+
+// AddQuestionFromMessage adds a new question to the database from a message
+func (db *DB) AddQuestionFromMessage(message *discordgo.Message) (int64, error) {
+	return db.AddQuestion(message.Content, message.Author.ID, message.Author.Username, message.ID, message.ChannelID)
 }
 
 // GetQuestionByMessageID gets a question by its Discord message ID
@@ -306,4 +331,17 @@ func (db *DB) GetApprovedQuestionStats() (int, int, int, error) {
 // Close closes the database connection
 func (db *DB) Close() error {
 	return db.conn.Close()
+}
+
+// ClearDatabase drops all tables from the database
+func (db *DB) ClearDatabase() error {
+	log.Println("Clearing the database")
+	query := `DROP TABLE IF EXISTS daily_questions`
+	_, err := db.conn.Exec(query)
+	if err != nil {
+		log.Printf("Failed to clear the database: %v", err)
+		return err
+	}
+	log.Println("Database cleared successfully")
+	return nil
 }

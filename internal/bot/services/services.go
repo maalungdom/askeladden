@@ -4,6 +4,7 @@ import (
 	"roersla.no/askeladden/internal/bot"
 )
 
+
 // BotServices holds all the services the bot can use.
 type BotServices struct {
 	Approval *ApprovalService

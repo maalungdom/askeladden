@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"roersla.no/askeladden/internal/bot"
+	"roersla.no/askeladden/internal/bot/services"
 )
 
 func init() {

@@ -24,9 +24,6 @@ func CreateDailyQuestionEmbed(question *database.Question, author *discordgo.Use
 			Name:    authorName,
 			IconURL: authorIcon,
 		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: "Sendt inn av brukeren",
-		},
 	}
 }
 
@@ -44,17 +41,5 @@ func CreateBotEmbed(session *discordgo.Session, title, description string, color
 	}
 }
 
-// CreateAISlopWarningEmbed returns the AI slop warning embed message
-func CreateAISlopWarningEmbed(session *discordgo.Session, version string, message string) *discordgo.MessageEmbed {
-	botUser, _ := session.User("@me")
-	return &discordgo.MessageEmbed{
-		Title:       "⚠️ AI Slop Warning",
-		Description: message + "\n\nVersion: " + version + "\n➔ Vil du bidra? Send en pull request! https://github.com/maalungdom/askeladden",
-		Color:       0xFFA500, // Orange
-		Author: &discordgo.MessageEmbedAuthor{
-			Name:    botUser.Username,
-			IconURL: botUser.AvatarURL(""),
-		},
-	}
-}
+
 

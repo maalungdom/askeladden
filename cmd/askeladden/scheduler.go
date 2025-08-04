@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"time"
-
 	"roersla.no/askeladden/internal/bot"
 	"roersla.no/askeladden/internal/bot/services"
 )
@@ -45,7 +44,7 @@ func triggerDailyQuestion(b bot.BotIface) {
 
 	// Send the question to the default channel
 	if b.GetConfig().Discord.DefaultChannelID != "" {
-		services.SendDailyQuestion(b, question)
+		services.SendDailyQuestion(b, question, "@everyone")
 		log.Printf("[SCHEDULER] Daily question sent: %s", question.Question)
 	} else {
 		log.Println("[SCHEDULER] Default channel not configured.")

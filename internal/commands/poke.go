@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"roersla.no/askeladden/internal/bot"

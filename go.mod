@@ -7,6 +7,8 @@ require (
 
 go 1.24.1
 
+replace roersla.no/askeladden => ./
+
 require (
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0

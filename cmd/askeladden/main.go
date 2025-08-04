@@ -34,24 +34,26 @@ func main() {
 	}
 
 	// Opprett bot
-	bot := bot.New(cfg, db, session)
+	askeladden := bot.New(cfg, db, session)
 
 	// Opprett tenester og handterarar
-	botServices := services.New(bot)
-	handlers := handlers.New(bot, botServices)
+	botServices := services.New(askeladden)
+	botHandlers := handlers.New(askeladden)
+	botHandlers.Services = botServices
 
 	// Set opp hendingshandterarar
-	session.AddHandler(handlers.Ready)
-	session.AddHandler(handlers.MessageCreate)
-	session.AddHandler(handlers.ReactionAdd)
+	session.AddHandler(botHandlers.Ready)
+	session.AddHandler(botHandlers.MessageCreate)
+	session.AddHandler(botHandlers.ReactionAdd)
+	session.AddHandler(botHandlers.InteractionCreate)
 
 	// Start bot
-	if err := bot.Start(); err != nil {
+	if err := askeladden.Start(); err != nil {
 		log.Fatalf("[MAIN] Error running bot: %v", err)
 	}
 
 	// Scheduler for daily question trigger
-	ticker := scheduleDailyQuestion(bot)
+	ticker := scheduleDailyQuestion(askeladden)
 	defer ticker.Stop()
 
 	// Vent på avslutningssignal
@@ -59,8 +61,14 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
+	// Send goodbye message before stopping
+	if askeladden.GetConfig().Discord.LogChannelID != "" {
+		embed := services.CreateBotEmbed(session, "🔴 Offline", "Askeladden is logging off. Goodbye! 👋", 0xff0000)
+		session.ChannelMessageSendEmbed(askeladden.GetConfig().Discord.LogChannelID, embed)
+	}
+
 	// Stopp bot
-	if err := bot.Stop(); err != nil {
+	if err := askeladden.Stop(); err != nil {
 		log.Fatalf("[MAIN] Error stopping bot: %v", err)
 	}
 }

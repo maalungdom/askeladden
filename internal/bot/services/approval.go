@@ -33,10 +33,9 @@ func (s *ApprovalService) postToApprovalQueue(session *discordgo.Session, questi
 		return
 	}
 
-	messageContent := fmt.Sprintf("**Nytt spørsmål til godkjenning** 📝\n\n**Spørsmål:** %s\n**Frå:** %s\n\nReager med 👍 for å godkjenne!",
-		question.Question, question.AuthorName)
+	approvalEmbed := CreateBotEmbed(session, "📝 Nytt spørsmål til godkjenning", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n\nReager med 👍 for å godkjenne!", question.Question, question.AuthorName), 0xffa500)
 
-	approvalMessage, err := session.ChannelMessageSend(s.Bot.GetConfig().Approval.QueueChannelID, messageContent)
+	approvalMessage, err := session.ChannelMessageSendEmbed(s.Bot.GetConfig().Approval.QueueChannelID, approvalEmbed)
 	if err != nil {
 		log.Printf("Failed to post to approval queue: %v", err)
 		return
