@@ -1,0 +1,5 @@
+# Example of the new config flags for AI SLOP warning
+showAISlopWarning: true
+aiSlopWarningText: |
+  Denne botten bruker AI-generert kode ("ai slop"). Inntil alt er manuelt sjekket, kan det vere rare eller feilende ting i svaret!
+  Bidra gjerne med pull requests på https://github.com/maalungdom/askeladden
