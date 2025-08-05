@@ -20,8 +20,8 @@ func init() {
 	}
 }
 
-func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
-	db := bot.GetDatabase()
+func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
+	db := bot.Database
 	log.Printf("Manual daily question trigger requested by %s", m.Author.Username)
 
 	// Support !poke alle
@@ -75,6 +75,6 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIfa
 			statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`, 
 				totalApproved, totalAsked+1, minAsked)
 			embed := services.CreateBotEmbed(s, "📊 Statistikk", statsMessage, 0x3399ff)
-			s.ChannelMessageSendEmbed(bot.GetConfig().Discord.LogChannelID, embed)
+			s.ChannelMessageSendEmbed(bot.Config.Discord.LogChannelID, embed)
 		}
 }

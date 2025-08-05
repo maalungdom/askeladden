@@ -52,27 +52,6 @@ func (b *Bot) Stop() error {
 	return b.Session.Close()
 }
 
-// GetConfig returns the bot's config.
-func (b *Bot) GetConfig() *config.Config {
-	return b.Config
-}
-
-// GetDatabase returns the bot's database connection.
-func (b *Bot) GetDatabase() *database.DB {
-	return b.Database
-}
-
-
-func (b *Bot) GetSession() *discordgo.Session {
-	return b.Session
-}
-
-// BotIface provides an interface for interacting with the main bot instance.
-type BotIface interface {
-	GetConfig() *config.Config
-	GetDatabase() *database.DB
-	GetSession() *discordgo.Session
-	Start() error
-	Stop() error
-}
+// Note: Direct field access is preferred in Go for simplicity
+// Bot fields (Session, Config, Database) are exported for direct access
 

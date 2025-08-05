@@ -11,7 +11,7 @@ type BotServices struct {
 }
 
 // New creates a new BotServices instance.
-func New(b bot.BotIface) *BotServices {
+func New(b *bot.Bot) *BotServices {
 	return &BotServices{
 		Approval: &ApprovalService{Bot: b},
 	}

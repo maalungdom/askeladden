@@ -12,7 +12,7 @@ func init() {
 	Register("❓", "Ask a question.", handleQuestionReaction)
 }
 
-func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, bot bot.BotIface) {
+func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, bot *bot.Bot) {
 	// Fetch the message
 	msg, err := s.ChannelMessage(r.ChannelID, r.MessageID)
 	if err != nil {
@@ -21,7 +21,7 @@ func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAd
 	}
 
 	// Add the message as a question
-	db := bot.GetDatabase()
+	db := bot.Database
 	questionID, err := db.AddQuestion(msg.Content, msg.Author.ID, msg.Author.Username, msg.ID, msg.ChannelID)
 	if err != nil {
 		log.Printf("Failed to add question from message: %v", err)

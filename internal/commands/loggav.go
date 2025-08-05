@@ -19,7 +19,7 @@ func init() {
 }
 
 // Loggav handsamar loggav-kommandoen
-func Loggav(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
+func Loggav(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	bot.Stop()
 	os.Exit(0)
 }

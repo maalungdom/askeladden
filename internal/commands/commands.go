@@ -13,7 +13,7 @@ type Command struct {
 	name        string
 	description string
 	emoji       string
-	handler     func(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface)
+	handler     func(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot)
 	aliases     []string
 	adminOnly   bool
 }
@@ -22,7 +22,7 @@ type Command struct {
 var commands = make(map[string]Command)
 
 // MatchAndRunCommand finds and executes a command based on its name or alias.
-func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
+func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// `input` is the command with prefix, e.g., "!spør"
 	if cmd, exists := commands[input]; exists {
 		cmd.handler(s, m, bot)
@@ -30,7 +30,7 @@ func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.Message
 	}
 
 	// Check aliases
-	commandWithoutPrefix := strings.TrimPrefix(input, bot.GetConfig().Discord.Prefix)
+commandWithoutPrefix := strings.TrimPrefix(input, bot.Config.Discord.Prefix)
 	for _, cmd := range commands {
 		for _, alias := range cmd.aliases {
 			if alias == commandWithoutPrefix {

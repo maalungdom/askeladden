@@ -10,17 +10,17 @@ import (
 
 // SendDailyQuestion sends the daily question to the appropriate channel
 // mention may be "@everyone", "<@user_id>", or blank
-func SendDailyQuestion(bot bot.BotIface, question *database.Question, mention string) {
+func SendDailyQuestion(bot *bot.Bot, question *database.Question, mention string) {
 	channelID := "1379979709055762518"
 
 	// Try to fetch pretty channel name
-	chanObj, chanErr := bot.GetSession().State.Channel(channelID)
+	chanObj, chanErr := bot.Session.State.Channel(channelID)
 	channelName := channelID
 	if chanErr == nil {
 		channelName = "#" + chanObj.Name
 	}
 	// Fetch Discord user for embed author
-	authorObj, _ := bot.GetSession().User(question.AuthorID)
+	authorObj, _ := bot.Session.User(question.AuthorID)
 	// Embed
 	embed := CreateDailyQuestionEmbed(question, authorObj)
 	// Use @mention string if provided; else, empty
@@ -29,7 +29,7 @@ func SendDailyQuestion(bot bot.BotIface, question *database.Question, mention st
 		Embeds:  []*discordgo.MessageEmbed{embed},
 	}
 	log.Printf("[MESSAGING] Sending daily question to %s for %s: \"%s\" [mention:'%s']", channelName, embed.Author.Name, question.Question, mention)
-	_, err := bot.GetSession().ChannelMessageSendComplex(channelID, msg)
+	_, err := bot.Session.ChannelMessageSendComplex(channelID, msg)
 	if err != nil {
 		log.Printf("[MESSAGING] Failed to send daily question: %v", err)
 	}

@@ -13,12 +13,12 @@ func init() {
 	Register("⭐", "Add a message to the starboard", handleStarReaction)
 }
 
-func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b bot.BotIface) {
+func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
 	if r.UserID == s.State.User.ID { // Ignore bot's own reactions
 		return
 	}
 	// Don't process reactions in the starboard channel itself
-	if r.ChannelID == b.GetConfig().Starboard.ChannelID {
+	if r.ChannelID == b.Config.Starboard.ChannelID {
 		return
 	}
 
@@ -39,9 +39,9 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 	}
 
 	// Log for debugging
-	log.Printf("Message %s in channel %s has %d stars (threshold: %d)", r.MessageID, r.ChannelID, stars, b.GetConfig().Starboard.Threshold)
+	log.Printf("Message %s in channel %s has %d stars (threshold: %d)", r.MessageID, r.ChannelID, stars, b.Config.Starboard.Threshold)
 
-	if stars >= b.GetConfig().Starboard.Threshold {
+	if stars >= b.Config.Starboard.Threshold {
 		// Send message to starboard channel
 		embed := &discordgo.MessageEmbed{
 			Author: &discordgo.MessageEmbedAuthor{
@@ -65,7 +65,7 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 			},
 		}
 
-		_, err := s.ChannelMessageSendEmbed(b.GetConfig().Starboard.ChannelID, embed)
+		_, err := s.ChannelMessageSendEmbed(b.Config.Starboard.ChannelID, embed)
 		if err != nil {
 			log.Printf("Error sending starboard message: %v", err)
 		}

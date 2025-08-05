@@ -8,7 +8,7 @@ import (
 )
 
 // scheduleDailyQuestion sets up the daily trigger for the question.
-func scheduleDailyQuestion(b bot.BotIface) *time.Ticker {
+func scheduleDailyQuestion(b *bot.Bot) *time.Ticker {
 	ticker := time.NewTicker(24 * time.Hour)
 	go func() {
 		for {
@@ -22,9 +22,9 @@ func scheduleDailyQuestion(b bot.BotIface) *time.Ticker {
 }
 
 // triggerDailyQuestion handles the daily question logic.
-func triggerDailyQuestion(b bot.BotIface) {
+func triggerDailyQuestion(b *bot.Bot) {
 	// Retrieve least asked approved question
-	question, err := b.GetDatabase().GetLeastAskedApprovedQuestion()
+	question, err := b.Database.GetLeastAskedApprovedQuestion()
 	if err != nil {
 		log.Printf("[SCHEDULER] Failed to retrieve daily question: %v", err)
 		return
@@ -36,14 +36,14 @@ func triggerDailyQuestion(b bot.BotIface) {
 	}
 
 	// Increment usage for the question
-	err = b.GetDatabase().IncrementQuestionUsage(question.ID)
+	err = b.Database.IncrementQuestionUsage(question.ID)
 	if err != nil {
 		log.Printf("[SCHEDULER] Failed to update question usage: %v", err)
 		return
 	}
 
 	// Send the question to the default channel
-	if b.GetConfig().Discord.DefaultChannelID != "" {
+	if b.Config.Discord.DefaultChannelID != "" {
 		services.SendDailyQuestion(b, question, "@everyone")
 		log.Printf("[SCHEDULER] Daily question sent: %s", question.Question)
 	} else {

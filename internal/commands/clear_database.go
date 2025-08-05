@@ -18,7 +18,7 @@ func init() {
 }
 
 // ClearDatabase handles the command to clear the database
-func ClearDatabase(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
+func ClearDatabase(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Send a confirmation message with a button
 	confirmationEmbed := &discordgo.MessageEmbed{
 		Title:       "🗑️ Bekreftelse på databasetømming",

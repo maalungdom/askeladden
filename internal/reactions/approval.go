@@ -12,16 +12,16 @@ func init() {
 	Register("👍", "Approve a question.", handleApprovalReaction).SetAdminOnly()
 }
 
-func handleApprovalReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b bot.BotIface) {
+func handleApprovalReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
 	// Get the question by approval message ID
-	question, err := b.GetDatabase().GetQuestionByApprovalMessageID(r.MessageID)
+	question, err := b.Database.GetQuestionByApprovalMessageID(r.MessageID)
 	if err != nil {
 		log.Printf("Could not find question for approval message %s: %v", r.MessageID, err)
 		return
 	}
 
 	// Approve the question
-	err = b.GetDatabase().ApproveQuestion(question.ID, r.UserID)
+	err = b.Database.ApproveQuestion(question.ID, r.UserID)
 	if err != nil {
 		log.Printf("Failed to approve question: %v", err)
 		return

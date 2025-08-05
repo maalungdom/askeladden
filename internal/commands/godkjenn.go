@@ -22,8 +22,8 @@ func init() {
 }
 
 // Godkjenn handsamer godkjenn-kommandoen
-func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
-	db := bot.GetDatabase()
+func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
+	db := bot.Database
 	// Parse kommandoen for å hente spørsmål ID eller søkeord
 	parts := strings.SplitN(m.Content, " ", 2)
 	if len(parts) < 2 {

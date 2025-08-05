@@ -21,7 +21,7 @@ func init() {
 
 // Hjelp handsamer hjelp-kommandoen
 //--------------------------------------------------------------------------------
-func Hjelp(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
+func Hjelp(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Check if user has admin role (we need to implement role checking here)
 	// For now, let's use a placeholder implementation
 	isAdmin := false
@@ -33,7 +33,7 @@ func Hjelp(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
 			// Check for opplysar role (need to get the role ID from config)
 			// This is a placeholder - we'll need to pass config or implement differently
 			for _, roleID := range member.Roles {
-				if roleID == bot.GetConfig().Approval.OpplysarRoleID { // Use config for role ID
+				if roleID == bot.Config.Approval.OpplysarRoleID { // Use config for role ID
 					isAdmin = true
 					break
 				}

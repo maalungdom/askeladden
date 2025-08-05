@@ -13,22 +13,22 @@ import (
 
 // Handler struct holds the bot instance and services.
 type Handler struct {
-	Bot            bot.BotIface
+	Bot            *bot.Bot
 	Services       *services.BotServices
 	warnedChannels map[string]bool
 }
 
 // New creates a new Handler instance.
-func New(b bot.BotIface) *Handler {
+func New(b *bot.Bot) *Handler {
 return &Handler{Bot: b}
 }
 
 // Ready handles the ready event.
 func (h *Handler) Ready(s *discordgo.Session, event *discordgo.Ready) {
 	log.Println("[BOT] Askeladden is connected and ready.")
-	if h.Bot.GetConfig().Discord.LogChannelID != "" {
+	if h.Bot.Config.Discord.LogChannelID != "" {
 		embed := services.CreateBotEmbed(s, "🟢 Online", "Askeladden is online and ready! ✨", 0x00ff00)
-		s.ChannelMessageSendEmbed(h.Bot.GetConfig().Discord.LogChannelID, embed)
+		s.ChannelMessageSendEmbed(h.Bot.Config.Discord.LogChannelID, embed)
 	}
 }
 
@@ -40,7 +40,7 @@ func (h *Handler) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 	}
 
 	// Ignore messages that don't start with the prefix
-	if !strings.HasPrefix(m.Content, h.Bot.GetConfig().Discord.Prefix) {
+	if !strings.HasPrefix(m.Content, h.Bot.Config.Discord.Prefix) {
 		return
 	}
 
@@ -100,8 +100,7 @@ func (h *Handler) InteractionCreate(s *discordgo.Session, i *discordgo.Interacti
 			}
 
 			// Clear the database
-			db := h.Bot.GetDatabase()
-			if err := db.ClearDatabase(); err != nil {
+			if err := h.Bot.Database.ClearDatabase(); err != nil {
 				log.Printf("Failed to clear database: %v", err)
 				// Let the user know something went wrong
 				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

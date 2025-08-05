@@ -18,7 +18,7 @@ func init() {
 // Ping handsamer ping-kommandoen
 //--------------------------------------------------------------------------------
 
-func Ping(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
+func Ping(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	embed := services.CreateBotEmbed(s, "Pong! 🏓", "Bot er oppe og svarar.", 0x00ff00)
 	s.ChannelMessageSendEmbed(m.ChannelID, embed)
 }

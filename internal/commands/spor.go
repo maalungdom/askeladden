@@ -21,8 +21,8 @@ func init() {
 }
 
 // Spor handsamer spør-kommandoen
-func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
-	db := bot.GetDatabase()
+func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
+	db := bot.Database
 	// Parse kommandoen for å hente spørsmålet
 	parts := strings.SplitN(m.Content, " ", 2)
 	if len(parts) < 2 {

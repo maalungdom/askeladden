@@ -11,41 +11,41 @@ import (
 
 // ApprovalService handles logic for question approval.
 type ApprovalService struct {
-	Bot bot.BotIface
+	Bot *bot.Bot
 }
 
 // PostNewQuestionToApprovalQueue posts a newly created question to the approval queue.
 func (s *ApprovalService) PostNewQuestionToApprovalQueue(questionID int64) {
 	// Get the question from database
-	question, err := s.Bot.GetDatabase().GetPendingQuestionByID(int(questionID))
+	question, err := s.Bot.Database.GetPendingQuestionByID(int(questionID))
 	if err != nil {
 		log.Printf("Failed to get question for approval queue posting: %v", err)
 		return
 	}
 
-	s.postToApprovalQueue(s.Bot.GetSession(), question)
+	s.postToApprovalQueue(s.Bot.Session, question)
 }
 
 // postToApprovalQueue posts a question to the approval queue channel.
 func (s *ApprovalService) postToApprovalQueue(session *discordgo.Session, question *database.Question) {
-	if s.Bot.GetConfig().Approval.QueueChannelID == "" {
+	if s.Bot.Config.Approval.QueueChannelID == "" {
 		log.Println("Approval queue channel not configured")
 		return
 	}
 
 	approvalEmbed := CreateBotEmbed(session, "📝 Nytt spørsmål til godkjenning", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n\nReager med 👍 for å godkjenne!", question.Question, question.AuthorName), 0xffa500)
 
-	approvalMessage, err := session.ChannelMessageSendEmbed(s.Bot.GetConfig().Approval.QueueChannelID, approvalEmbed)
+	approvalMessage, err := session.ChannelMessageSendEmbed(s.Bot.Config.Approval.QueueChannelID, approvalEmbed)
 	if err != nil {
 		log.Printf("Failed to post to approval queue: %v", err)
 		return
 	}
 
 	// Add thumbs up reaction
-	session.MessageReactionAdd(s.Bot.GetConfig().Approval.QueueChannelID, approvalMessage.ID, "👍")
+	session.MessageReactionAdd(s.Bot.Config.Approval.QueueChannelID, approvalMessage.ID, "👍")
 
 	// Update the database with the approval message ID
-	err = s.Bot.GetDatabase().UpdateApprovalMessageID(question.ID, approvalMessage.ID)
+	err = s.Bot.Database.UpdateApprovalMessageID(question.ID, approvalMessage.ID)
 	if err != nil {
 		log.Printf("Failed to update approval message ID: %v", err)
 	}
@@ -53,7 +53,7 @@ func (s *ApprovalService) postToApprovalQueue(session *discordgo.Session, questi
 
 // UserHasOpplysarRole checks if a user has the opplysar role.
 func (s *ApprovalService) UserHasOpplysarRole(session *discordgo.Session, guildID, userID string) bool {
-	if s.Bot.GetConfig().Approval.OpplysarRoleID == "" {
+	if s.Bot.Config.Approval.OpplysarRoleID == "" {
 		return false
 	}
 
@@ -64,7 +64,7 @@ func (s *ApprovalService) UserHasOpplysarRole(session *discordgo.Session, guildI
 	}
 
 	for _, roleID := range member.Roles {
-		if roleID == s.Bot.GetConfig().Approval.OpplysarRoleID {
+		if roleID == s.Bot.Config.Approval.OpplysarRoleID {
 			return true
 		}
 	}

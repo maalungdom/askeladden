@@ -9,7 +9,7 @@ import (
 type Reaction struct {
 	emoji       string
 	description string
-	handler     func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b bot.BotIface)
+	handler     func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot)
 	adminOnly   bool
 }
 
@@ -17,7 +17,7 @@ type Reaction struct {
 var reactions = make(map[string]Reaction)
 
 // Register registers a new reaction handler.
-func Register(emoji string, description string, handler func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b bot.BotIface)) Reaction {
+func Register(emoji string, description string, handler func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot)) Reaction {
 	r := Reaction{
 		emoji:       emoji,
 		description: description,
@@ -36,7 +36,7 @@ func (r Reaction) SetAdminOnly() Reaction {
 }
 
 // MatchAndRunReaction finds and executes a reaction based on its emoji.
-func MatchAndRunReaction(emoji string, s *discordgo.Session, r *discordgo.MessageReactionAdd, b bot.BotIface) {
+func MatchAndRunReaction(emoji string, s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
 	if reaction, exists := reactions[emoji]; exists {
 		reaction.handler(s, r, b)
 		return

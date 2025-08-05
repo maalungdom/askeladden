@@ -18,7 +18,7 @@ func init() {
 
 // Info handsamer info-kommandoen
 //--------------------------------------------------------------------------------
-func Info(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface) {
+func Info(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	guildCount := len(s.State.Guilds)
 	infoText := fmt.Sprintf("**Om Askeladden:**\n" +
 		"🤖 Ein norsk Discord-bot\n" +
