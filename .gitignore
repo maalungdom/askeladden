@@ -1,3 +1,4 @@
 token.txt
 config.yaml
-secrets.yaml
+secrets*.yaml
+*secrets*
