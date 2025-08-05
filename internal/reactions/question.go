@@ -11,7 +11,7 @@ import (
 // RegisterQuestionReaction registers the question reaction with the configured emoji
 func RegisterQuestionReaction(b *bot.Bot) {
 	emoji := b.Config.Reactions.Question
-	Register(emoji, "Ask a question.", handleQuestionReaction)
+	Register(emoji, "Spør eit spørsmål.", handleQuestionReaction)
 }
 
 func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, bot *bot.Bot) {

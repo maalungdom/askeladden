@@ -60,9 +60,9 @@ func InitializeReactions(b *bot.Bot) {
 	RegisterQuestionReaction(b)
 	
 	// Register approval reaction (static emoji)
-	Register("👍", "Approve a question.", handleApprovalReaction).SetAdminOnly()
+	Register("👍", "Godkjenn eit spørsmål.", handleApprovalReaction).SetAdminOnly()
 	
 	// Register reject reaction (static emoji) 
-	Register("👎", "Reject a question.", handleRejectReaction).SetAdminOnly()
+	Register("👎", "Avvis eit spørsmål.", handleRejectReaction).SetAdminOnly()
 }
 

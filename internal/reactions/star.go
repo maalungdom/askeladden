@@ -12,7 +12,7 @@ import (
 // RegisterStarboardReaction registers the starboard reaction with the configured emoji
 func RegisterStarboardReaction(b *bot.Bot) {
 	emoji := b.Config.Starboard.Emoji
-	Register(emoji, "Add a message to the starboard", handleStarReaction)
+	Register(emoji, "Legg til ei melding på stjernebrettet", handleStarReaction)
 }
 
 func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
@@ -61,8 +61,8 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 		// Add original message link
 		embed.Fields = []*discordgo.MessageEmbedField{
 			{
-				Name:   "Original Message",
-				Value:  fmt.Sprintf("[Jump to Message](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID),
+				Name:   "Opphaveleg melding",
+				Value:  fmt.Sprintf("[Hopp til melding](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID),
 				Inline: false,
 			},
 		}
