@@ -73,6 +73,12 @@ func (h *Handler) ReactionAdd(s *discordgo.Session, r *discordgo.MessageReaction
 		return
 	}
 
+	// Handle hammer emoji for reporting incorrect words
+	if r.Emoji.Name == "🔨" {
+		h.promptForIncorrectWord(s, r)
+		return
+	}
+
 	// Check if the reaction is admin-only
 	if reactions.IsAdminReaction(r.Emoji.Name) {
 		if !h.Services.Approval.UserHasOpplysarRole(s, r.GuildID, r.UserID) {
@@ -82,6 +88,33 @@ func (h *Handler) ReactionAdd(s *discordgo.Session, r *discordgo.MessageReaction
 
 	// Run the reaction handler
 	reactions.MatchAndRunReaction(r.Emoji.Name, s, r, h.Bot)
+}
+
+// promptForIncorrectWord prompts the user to provide the incorrect word(s)
+func (h *Handler) promptForIncorrectWord(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+	log.Printf("User %s reported an incorrect word in message %s", r.UserID, r.MessageID)
+	msg, err := s.ChannelMessage(r.ChannelID, r.MessageID)
+	if err != nil {
+		log.Printf("Error fetching message: %v", err)
+		return
+	}
+
+	promptEmbed := &discordgo.MessageEmbed{
+		Title:       "🚨 Report Incorrect Word",
+		Description: "Please reply with the word(s) that are incorrect, separated by commas if more than one.",
+		Color:       0xff0000,
+	}
+
+	s.ChannelMessageSendEmbed(r.ChannelID, promptEmbed)
+
+	// Create a new thread in the grammar channel for discussion
+	grammarChannelID := "1402287744985727167"
+	thread, err := s.MessageThreadStart(grammarChannelID, r.MessageID, "Discussion on Incorrect Word")
+	if err != nil {
+		log.Printf("Error starting thread: %v", err)
+	} else {
+		log.Printf("Created a thread: %v", thread.ID)
+	}
 }
 
 // InteractionCreate handles button clicks and other interactions

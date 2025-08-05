@@ -24,6 +24,10 @@ type DatabaseIface interface {
 	GetLeastAskedApprovedQuestion() (*Question, error)
 	IncrementQuestionUsage(questionID int) error
 	GetApprovedQuestionStats() (int, int, int, error)
+	AddBannedWord(word, reason, authorID string) error
+	RemoveBannedWord(word string) error
+	IsBannedWord(word string) (bool, *BannedWord, error)
+	GetBannedWords() ([]*BannedWord, error)
 	Close() error
 	ClearDatabase() error
 }
@@ -32,8 +36,9 @@ type DatabaseIface interface {
 var _ DatabaseIface = (*DB)(nil)
 
 type DB struct {
-	conn      *sql.DB
-	tableName string // Dynamic table name (daily_questions or daily_questions_testing)
+	conn              *sql.DB
+	tableName         string // Dynamic table name (daily_questions or daily_questions_testing)
+	bannedWordsTable  string // banned_bokmal_words or banned_bokmal_words_testing
 }
 
 // New creates a new database connection
@@ -55,16 +60,20 @@ func New(cfg *config.Config) (*DB, error) {
 
 	log.Println("Database connection established successfully")
 	
-	// Determine table name based on config
+	// Determine table names based on config
 	tableName := "daily_questions"
+	bannedWordsTable := "banned_bokmal_words"
+	
 	if cfg.TableSuffix != "" {
 		tableName += cfg.TableSuffix
-		log.Printf("Using beta table name: %s", tableName)
+		bannedWordsTable += cfg.TableSuffix
+		log.Printf("Using beta table names: %s, %s", tableName, bannedWordsTable)
 	}
 	
 	db := &DB{
-		conn:      conn,
-		tableName: tableName,
+		conn:              conn,
+		tableName:         tableName,
+		bannedWordsTable: bannedWordsTable,
 	}
 	
 	// Create tables if they don't exist
@@ -72,6 +81,21 @@ func New(cfg *config.Config) (*DB, error) {
 	if err := db.createTables(); err != nil {
 		log.Printf("Failed to create tables: %v", err)
 		return nil, err
+	}
+
+	// Create banned Bokmål words table
+	bannedWordsQuery := fmt.Sprintf(`
+	CREATE TABLE IF NOT EXISTS %s (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		word VARCHAR(255) NOT NULL UNIQUE,
+		reason TEXT,
+		author_id VARCHAR(255) NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`, db.bannedWordsTable)
+
+	log.Printf("Creating table: %s", db.bannedWordsTable)
+	if _, err := db.conn.Exec(bannedWordsQuery); err != nil {
+		return nil, fmt.Errorf("failed to create %s table: %w", db.bannedWordsTable, err)
 	}
 
 	log.Println("Database initialization completed")
@@ -122,6 +146,15 @@ type Question struct {
 	ApprovalMessageID *string
 	ApprovedBy       *string
 	ApprovedAt       *time.Time
+}
+
+// BannedWord represents a banned word from the database
+type BannedWord struct {
+	ID        int
+	Word      string
+	Reason    string
+	AuthorID  string
+	CreatedAt time.Time
 }
 
 // AddQuestion adds a new question to the database
@@ -360,6 +393,69 @@ func (db *DB) GetApprovedQuestionStats() (int, int, int, error) {
 // Close closes the database connection
 func (db *DB) Close() error {
 	return db.conn.Close()
+}
+
+// AddBannedWord adds a new banned word to the database
+func (db *DB) AddBannedWord(word, reason, authorID string) error {
+	log.Printf("Adding banned word: %s by %s", word, authorID)
+	query := fmt.Sprintf("INSERT INTO %s (word, reason, author_id) VALUES (?, ?, ?)", db.bannedWordsTable)
+	_, err := db.conn.Exec(query, word, reason, authorID)
+	if err != nil {
+		log.Printf("Failed to add banned word: %v", err)
+		return err
+	}
+	log.Printf("Successfully added banned word: %s", word)
+	return nil
+}
+
+// RemoveBannedWord removes a banned word from the database
+func (db *DB) RemoveBannedWord(word string) error {
+	log.Printf("Removing banned word: %s", word)
+	query := fmt.Sprintf("DELETE FROM %s WHERE word = ?", db.bannedWordsTable)
+	_, err := db.conn.Exec(query, word)
+	if err != nil {
+		log.Printf("Failed to remove banned word: %v", err)
+		return err
+	}
+	log.Printf("Successfully removed banned word: %s", word)
+	return nil
+}
+
+// IsBannedWord checks if a word is banned
+func (db *DB) IsBannedWord(word string) (bool, *BannedWord, error) {
+	query := fmt.Sprintf("SELECT id, word, reason, author_id, created_at FROM %s WHERE word = ?", db.bannedWordsTable)
+	var bw BannedWord
+	err := db.conn.QueryRow(query, word).Scan(
+		&bw.ID, &bw.Word, &bw.Reason, &bw.AuthorID, &bw.CreatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil, nil
+		}
+		return false, nil, err
+	}
+	return true, &bw, nil
+}
+
+// GetBannedWords returns all banned words
+func (db *DB) GetBannedWords() ([]*BannedWord, error) {
+	query := fmt.Sprintf("SELECT id, word, reason, author_id, created_at FROM %s ORDER BY created_at DESC", db.bannedWordsTable)
+	rows, err := db.conn.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var words []*BannedWord
+	for rows.Next() {
+		var bw BannedWord
+		err := rows.Scan(&bw.ID, &bw.Word, &bw.Reason, &bw.AuthorID, &bw.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		words = append(words, &bw)
+	}
+	return words, nil
 }
 
 // ClearDatabase drops all tables from the database
