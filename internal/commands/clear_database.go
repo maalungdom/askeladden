@@ -8,8 +8,8 @@ import (
 )
 
 func init() {
-	commands["!tøm-db"] = Command{
-		name:        "!tøm-db",
+	commands["tøm-db"] = Command{
+		name:        "tøm-db",
 		description: "Tømmer databasen for alle spørsmål. Dette kan ikke angres.",
 		emoji:       "🗑️",
 		handler:     ClearDatabase,

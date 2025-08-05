@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	commands["!ping"] = Command{
-		name:        "!ping",
+	commands["ping"] = Command{
+		name:        "ping",
 		description: "Sjekk om boten svarar",
 		emoji:       "🏓",
 		handler:     Ping,

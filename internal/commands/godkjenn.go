@@ -11,8 +11,8 @@ import (
 	"roersla.no/askeladden/internal/bot/services"
 )
 func init() {
-	commands["!godkjenn"] = Command{
-		name:        "!godkjenn",
+	commands["godkjenn"] = Command{
+		name:        "godkjenn",
 		description: "Godkjenn eit spørsmål manuelt (kun for opplysarar)",
 		emoji:       "✅",
 		handler:   Godkjenn,

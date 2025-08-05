@@ -10,8 +10,8 @@ import (
 )
 
 func init() {
-	commands["!hjelp"] = Command{
-		name:        "!hjelp",
+	commands["hjelp"] = Command{
+		name:        "hjelp",
 		description: "Vis denne hjelpemeldinga",
 		emoji:       "❓",
 		handler:   Hjelp,

@@ -8,8 +8,8 @@ import (
 )
 
 func init() {
-	commands["!info"] = Command{
-		name:        "!info",
+	commands["info"] = Command{
+		name:        "info",
 		description: "Vis informasjon om boten",
 		emoji:       "📊",
 		handler:     Info,

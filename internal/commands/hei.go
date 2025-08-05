@@ -7,8 +7,8 @@ import (
 )
 
 func init() {
-	commands["!hei"] = Command{
-		name:        "!hei",
+	commands["hei"] = Command{
+		name:        "hei",
 		description: "Sei hei til boten",
 		emoji:       "👋",
 		handler:     Hei,

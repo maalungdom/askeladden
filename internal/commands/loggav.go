@@ -9,8 +9,8 @@ import (
 )
 
 func init() {
-	commands["!loggav"] = Command{
-		name:        "!loggav",
+	commands["loggav"] = Command{
+		name:        "loggav",
 		description: "Loggar av boten og avsluttar programmet (kun for admin)",
 		emoji:       "👋",
 		handler:     Loggav,

@@ -11,8 +11,8 @@ import (
 )
 
 func init() {
-	commands["!poke"] = Command{
-		name:        "!poke",
+	commands["poke"] = Command{
+		name:        "poke",
 		description: "Trigger dagens spørsmål manuelt (kun admin)",
 		emoji:       "👉",
 		handler:   handlePoke,

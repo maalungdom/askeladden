@@ -23,19 +23,22 @@ var commands = make(map[string]Command)
 
 // MatchAndRunCommand finds and executes a command based on its name or alias.
 func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
-	// `input` is the command with prefix, e.g., "!spør"
-	if cmd, exists := commands[input]; exists {
+	// `input` is the command with prefix, e.g., "?spør"
+	// Remove prefix to get the actual command
+	commandWithoutPrefix := strings.TrimPrefix(input, bot.Config.Discord.Prefix)
+	
+	// Try to find command by name without prefix
+	if cmd, exists := commands[commandWithoutPrefix]; exists {
 		cmd.handler(s, m, bot)
 		return
 	}
 
 	// Check aliases
-commandWithoutPrefix := strings.TrimPrefix(input, bot.Config.Discord.Prefix)
 	for _, cmd := range commands {
 		for _, alias := range cmd.aliases {
 			if alias == commandWithoutPrefix {
-					cmd.handler(s, m, bot)
-				return
+				cmd.handler(s, m, bot)
+			return
 			}
 		}
 	}
@@ -43,7 +46,11 @@ commandWithoutPrefix := strings.TrimPrefix(input, bot.Config.Discord.Prefix)
 
 // IsAdminCommand checks if a command is admin-only
 func IsAdminCommand(commandName string) bool {
-	if cmd, exists := commands[commandName]; exists {
+	// Remove prefix from command name for lookup
+	commandWithoutPrefix := strings.TrimPrefix(commandName, "!")
+	commandWithoutPrefix = strings.TrimPrefix(commandWithoutPrefix, "?")
+	
+	if cmd, exists := commands[commandWithoutPrefix]; exists {
 		return cmd.adminOnly
 	}
 	return false

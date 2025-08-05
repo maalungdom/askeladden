@@ -11,8 +11,8 @@ import (
 )
 
 func init() {
-	commands["!spør"] = Command{
-		name:        "!spør",
+	commands["spør"] = Command{
+		name:        "spør",
 		description: "Legg til eit spørsmål for daglege spørsmål",
 		emoji:       "❓",
 		handler:     Spor,
