@@ -33,11 +33,13 @@ cp secrets-beta.yaml secrets.yaml
 echo "✅ Copied beta configuration files"
 
 # Show which channels will be used
-echo "🏗️  Beta channels:"
+echo "🏗️  Beta configuration:"
+echo "   🔧 Prefix: ? (beta) vs ! (production)"
 echo "   📋 Log: 1402262636782944366 (bothagen)"
 echo "   💬 Main: 1402262679745462453 (kvardagsprat)"
 echo "   ⭐ Starboard: 1402262710279864370 (stjernebrettet)"
 echo "   ❓ Approval: 1402262743779774568 (spørsmål)"
+echo "   💾 Database: daily_questions_testing (isolated from production)"
 echo ""
 
 # Run the beta bot

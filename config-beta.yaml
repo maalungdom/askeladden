@@ -1,5 +1,5 @@
 discord:
-  prefix: "!"
+  prefix: "?"
   logChannelID: "1402262636782944366"  # bothagen (logging)
   defaultChannelID: "1402262679745462453"  # kvardagsprat (hovudkanal)
 
