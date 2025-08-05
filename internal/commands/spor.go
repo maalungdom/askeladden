@@ -26,7 +26,7 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Parse kommandoen for å hente spørsmålet
 	parts := strings.SplitN(m.Content, " ", 2)
 	if len(parts) < 2 {
-			embed := services.CreateBotEmbed(s, "❓ Feil", "Du må skrive eit spørsmål! Eksempel: `!spør Kva er din yndlingsmat?`", 0xff0000)
+			embed := services.CreateBotEmbed(s, "❓ Feil", "Du må skrive eit spørsmål! Døme: `!spør Kva er din yndlingsmat?`", 0xff0000)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 			return
 	}
@@ -39,7 +39,7 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	}
 
 	// Send bekreftelse til brukaren
-	embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Takk! Spørsmålet ditt er sendt til godkjenning: \"%s\"\n\n*Du vil få ei melding når det blir godkjent av opplysarane våre! ✨*", question), 0x0099ff)
+	embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Takk! Spørsmålet ditt er sendt til godkjenning: \"%s\"\n\n*Du får ei melding når det vert godkjent av opplysarane våre! ✨*", question), 0x0099ff)
 	response, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	if err != nil {
 		log.Printf("Feil ved sending av melding: %v", err)
@@ -58,7 +58,7 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Send DM bekreftelse til brukaren
 	privateChannel, err := s.UserChannelCreate(m.Author.ID)
 	if err == nil {
-		embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Hei %s! 👋\n\nSpørsmålet ditt har blitt sendt til godkjenning:\n\n**\"%s\"**\n\nDu vil få beskjed når det blir godkjent av opplysarane våre! 📝✨", m.Author.Username, question), 0x0099ff)
+	embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Hei %s! 👋\n\nSpørsmålet ditt er vorte sendt til godkjenning:\n\n**\"%s\"**\n\nDu får bod når det vert godkjent av opplysarane våre! 📝✨", m.Author.Username, question), 0x0099ff)
 		s.ChannelMessageSendEmbed(privateChannel.ID, embed)
 	}
 

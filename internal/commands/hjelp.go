@@ -12,7 +12,7 @@ import (
 func init() {
 	commands["hjelp"] = Command{
 		name:        "hjelp",
-		description: "Vis denne hjelpemeldinga",
+		description: "Syn denne hjelpemeldinga",
 		emoji:       "❓",
 		handler:   Hjelp,
 		aliases:     []string{"help", "h"},

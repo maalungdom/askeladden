@@ -10,7 +10,7 @@ import (
 func init() {
 	commands["info"] = Command{
 		name:        "info",
-		description: "Vis informasjon om boten",
+		description: "Syn opplysingar om boten",
 		emoji:       "📊",
 		handler:     Info,
 	}
@@ -22,7 +22,7 @@ func Info(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	guildCount := len(s.State.Guilds)
 	infoText := fmt.Sprintf("**Om Askeladden:**\n" +
 		"🤖 Ein norsk Discord-bot\n" +
-		"💻 Skrive i Go\n" +
+		"💻 Skriven i Go\n" +
 		"🏠 Laga av rørsla\n" +
 		"🖥️ Køyrer på %d servarar\n" +
 		"🤖 Bot-brukar: %s#%s", 

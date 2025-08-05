@@ -13,7 +13,7 @@ import (
 func init() {
 	commands["poke"] = Command{
 		name:        "poke",
-		description: "Trigger dagens spørsmål manuelt (kun admin)",
+		description: "Utløys dagens spørsmål for hand (kun admin)",
 		emoji:       "👉",
 		handler:   handlePoke,
 		adminOnly:   true,
@@ -41,7 +41,7 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) 
 
 	if question == nil {
 		log.Println("No approved questions available")
-		embed := services.CreateBotEmbed(s, "😔 Ingen godkjente spørsmål", "Ingen godkjente spørsmål tilgjengelege for no.", 0xffff00)
+		embed := services.CreateBotEmbed(s, "😔 Ingen godkjente spørsmål", "Ingen godkjente spørsmål tilgjengelege for augneblinken.", 0xffff00)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}

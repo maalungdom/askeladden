@@ -10,7 +10,7 @@ import (
 func init() {
 	commands["tøm-db"] = Command{
 		name:        "tøm-db",
-		description: "Tømmer databasen for alle spørsmål. Dette kan ikke angres.",
+		description: "Tømmer databasen for alle spørsmål. Dette kan ikkje angrast.",
 		emoji:       "🗑️",
 		handler:     ClearDatabase,
 		adminOnly:   true,
@@ -21,8 +21,8 @@ func init() {
 func ClearDatabase(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Send a confirmation message with a button
 	confirmationEmbed := &discordgo.MessageEmbed{
-		Title:       "🗑️ Bekreftelse på databasetømming",
-		Description: "Er du sikker på at du vil slette **all** data fra databasen? Dette kan ikkje bli angra.",
+		Title:       "🗑️ Stadfesting av databasetømming",
+		Description: "Er du sikker på at du vil slette **alle** data frå databasen? Dette kan ikkje angrast.",
 		Color:       0xff0000, // Red color
 	}
 
