@@ -41,16 +41,6 @@ func (h *Handler) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 
 	log.Printf("[DEBUG] Received message: '%s', prefix: '%s'", m.Content, h.Bot.Config.Discord.Prefix)
 
-	// Check if in a test channel to avoid responding in production channels
-	switch m.ChannelID {
-	case "1402262636782944366", "1402262679745462453", "1402262710279864370", "1402262743779774568":
-		// these are test channels, continue
-		log.Printf("[DEBUG] Message in a test channel: '%s'", m.ChannelID)
-	default:
-		log.Printf("[DEBUG] Message in a non-test channel: '%s', ignoring", m.ChannelID)
-		return
-	}
-
 	// Ignore messages that don't start with the prefix
 	if !strings.HasPrefix(m.Content, h.Bot.Config.Discord.Prefix) {
 		log.Printf("[DEBUG] Message doesn't start with prefix, ignoring")
