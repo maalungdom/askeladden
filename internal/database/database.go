@@ -31,11 +31,13 @@ type DatabaseIface interface {
 var _ DatabaseIface = (*DB)(nil)
 
 type DB struct {
-	conn *sql.DB
+	conn      *sql.DB
+	tableName string // Dynamic table name (daily_questions or daily_questions_testing)
 }
 
 // New creates a new database connection
-func New(cfg *config.Config) (*DB, error) {	log.Printf("Connecting to database at %s:%d", cfg.Database.Host, cfg.Database.Port)
+func New(cfg *config.Config) (*DB, error) {
+	log.Printf("Connecting to database at %s:%d", cfg.Database.Host, cfg.Database.Port)
 	connStr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true",
 		cfg.Database.User, cfg.Database.Password, cfg.Database.Host, cfg.Database.Port, cfg.Database.DBName)
 
@@ -51,7 +53,18 @@ func New(cfg *config.Config) (*DB, error) {	log.Printf("Connecting to database a
 	}
 
 	log.Println("Database connection established successfully")
-	db := &DB{conn: conn}
+	
+	// Determine table name based on config
+	tableName := "daily_questions"
+	if cfg.TableSuffix != "" {
+		tableName += cfg.TableSuffix
+		log.Printf("Using beta table name: %s", tableName)
+	}
+	
+	db := &DB{
+		conn:      conn,
+		tableName: tableName,
+	}
 	
 	// Create tables if they don't exist
 	log.Println("Creating database tables if they don't exist")

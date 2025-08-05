@@ -35,32 +35,42 @@ type Config struct {
 		CronString string `yaml:"cron_string"`
 	} `yaml:"scheduler"`
 
+	// Beta environment settings
+	Environment   string `yaml:"environment"`
+	TableSuffix   string `yaml:"table_suffix"`
+	ShowAISlopWarning bool   `yaml:"showAISlopWarning"`
+	AISlopWarningText string `yaml:"aiSlopWarningText"`
 }
 
 
 // FUNKSJON. Lastar inn konfigurasjonen og gir ein fylt Config-struct
 //--------------------------------------------------------------------------------
 func Load() (*Config, error) {
+	return LoadWithFiles("config.yaml", "secrets.yaml")
+}
+
+// LoadWithFiles loads config with custom filenames
+func LoadWithFiles(configFile, secretsFile string) (*Config, error) {
 	var cfg Config
 
-	// 1. Open and read config.yaml
-	configFile, err := os.Open("config.yaml")
+	// 1. Open and read config file
+	cfgFile, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
 	}
-	defer configFile.Close()
+	defer cfgFile.Close()
 
-	decoder := yaml.NewDecoder(configFile)
+	decoder := yaml.NewDecoder(cfgFile)
 	if err := decoder.Decode(&cfg); err != nil {
 		return nil, err
 	}
 
-	// 2. Open and read secrets.yaml into a temporary struct
-	secretsFile, err := os.Open("secrets.yaml")
+	// 2. Open and read secrets file into a temporary struct
+	secrFile, err := os.Open(secretsFile)
 	if err != nil {
 		return nil, err
 	}
-	defer secretsFile.Close()
+	defer secrFile.Close()
 
 	var secrets struct {
 		Discord struct {
@@ -72,7 +82,7 @@ func Load() (*Config, error) {
 		} `yaml:"database"`
 	}
 
-	secretsDecoder := yaml.NewDecoder(secretsFile)
+	secretsDecoder := yaml.NewDecoder(secrFile)
 	if err := secretsDecoder.Decode(&secrets); err != nil {
 		return nil, err
 	}
