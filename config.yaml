@@ -7,6 +7,13 @@ approval:
   queueChannelID: "1401999939596456047"
   opplysarRoleID: "1381942927294726154"
 
+bannedwords:
+  approvalChannelID: "1402312367542374532"  # Production banned word approval channel
+  rettskrivarRoleID: "1381943546503761941"  # Production rettskrivar role
+
+grammar:
+  channelID: "1402287744985727167"  # Production grammar forum channel
+
 starboard:
   channelID: "1400774666569646111"
   threshold: 1
