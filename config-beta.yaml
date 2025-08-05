@@ -1,0 +1,30 @@
+discord:
+  prefix: "!"
+  logChannelID: "1402262636782944366"  # bothagen (logging)
+  defaultChannelID: "1402262679745462453"  # kvardagsprat (hovudkanal)
+
+approval:
+  queueChannelID: "1402262743779774568"  # spørsmål (approval queue)
+  opplysarRoleID: "1402262871966224444"  # utiviklar (admin rolle)
+
+starboard:
+  channelID: "1402262710279864370"  # stjernebrettet
+  threshold: 1
+
+database:
+  host: "malfolketno01.mysql.domeneshop.no"
+  port: 3306
+  dbname: "malfolketno01"
+  # Beta will use daily_questions_testing table instead of daily_questions
+
+scheduler:
+  cron_string: "0 10 * * *"  # 10:00 kvar dag for testing
+
+# Beta-specific settings
+environment: "beta"
+table_suffix: "_testing"  # Will create daily_questions_testing
+
+showAISlopWarning: true
+aiSlopWarningText: |
+  🧪 **BETA** - Denne botten bruker AI-generert kode og er i testing-modus. 
+  Inntil alt er manuelt sjekket, kan det vere rare eller feilende ting i svaret!

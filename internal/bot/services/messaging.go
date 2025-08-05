@@ -11,7 +11,12 @@ import (
 // SendDailyQuestion sends the daily question to the appropriate channel
 // mention may be "@everyone", "<@user_id>", or blank
 func SendDailyQuestion(bot *bot.Bot, question *database.Question, mention string) {
-	channelID := "1379979709055762518"
+	// Use configured default channel ID instead of hardcoded
+	channelID := bot.Config.Discord.DefaultChannelID
+	if channelID == "" {
+		log.Printf("[MESSAGING] No default channel ID configured, cannot send daily question")
+		return
+	}
 
 	// Try to fetch pretty channel name
 	chanObj, chanErr := bot.Session.State.Channel(channelID)
