@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -27,21 +28,40 @@ func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.Message
 	// Remove prefix to get the actual command
 	commandWithoutPrefix := strings.TrimPrefix(input, bot.Config.Discord.Prefix)
 	
+	log.Printf("[DEBUG] MatchAndRunCommand: input='%s', prefix='%s', command='%s'", input, bot.Config.Discord.Prefix, commandWithoutPrefix)
+	
+	// Debug: list all registered commands
+	log.Printf("[DEBUG] Registered commands: %v", getCommandNames())
+	
 	// Try to find command by name without prefix
 	if cmd, exists := commands[commandWithoutPrefix]; exists {
+		log.Printf("[DEBUG] Found command '%s', executing", commandWithoutPrefix)
 		cmd.handler(s, m, bot)
 		return
 	}
 
+	log.Printf("[DEBUG] Command '%s' not found, checking aliases", commandWithoutPrefix)
 	// Check aliases
 	for _, cmd := range commands {
 		for _, alias := range cmd.aliases {
 			if alias == commandWithoutPrefix {
+				log.Printf("[DEBUG] Found alias '%s', executing", alias)
 				cmd.handler(s, m, bot)
-			return
+				return
 			}
 		}
 	}
+	
+	log.Printf("[DEBUG] No command or alias found for '%s'", commandWithoutPrefix)
+}
+
+// Helper function to get command names for debugging
+func getCommandNames() []string {
+	var names []string
+	for name := range commands {
+		names = append(names, name)
+	}
+	return names
 }
 
 // IsAdminCommand checks if a command is admin-only

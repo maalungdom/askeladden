@@ -32,6 +32,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("[MAIN] Could not create Discord session: %v", err)
 	}
+	
+	// Enable necessary intents for message content
+	session.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsMessageContent | discordgo.IntentsGuildMessageReactions
 
 	// Opprett bot
 	askeladden := bot.New(cfg, db, session)

@@ -39,22 +39,39 @@ func (h *Handler) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 		return
 	}
 
+	log.Printf("[DEBUG] Received message: '%s', prefix: '%s'", m.Content, h.Bot.Config.Discord.Prefix)
+
+	// Check if in a test channel to avoid responding in production channels
+	switch m.ChannelID {
+	case "1402262636782944366", "1402262679745462453", "1402262710279864370", "1402262743779774568":
+		// these are test channels, continue
+		log.Printf("[DEBUG] Message in a test channel: '%s'", m.ChannelID)
+	default:
+		log.Printf("[DEBUG] Message in a non-test channel: '%s', ignoring", m.ChannelID)
+		return
+	}
+
 	// Ignore messages that don't start with the prefix
 	if !strings.HasPrefix(m.Content, h.Bot.Config.Discord.Prefix) {
+		log.Printf("[DEBUG] Message doesn't start with prefix, ignoring")
 		return
 	}
 
 	// Extract command and arguments
 	commandWithPrefix := strings.Split(m.Content, " ")[0]
+	log.Printf("[DEBUG] Command with prefix: '%s'", commandWithPrefix)
 
 	// Check if the command is admin-only
 	if commands.IsAdminCommand(commandWithPrefix) {
+		log.Printf("[DEBUG] Command is admin-only, checking permissions")
 		if !h.Services.Approval.UserHasOpplysarRole(s, m.GuildID, m.Author.ID) {
+			log.Printf("[DEBUG] User doesn't have admin role, ignoring")
 			return // Silently ignore admin commands from non-admins
 		}
 	}
 
 	// Run the command
+	log.Printf("[DEBUG] Running command: '%s'", commandWithPrefix)
 	commands.MatchAndRunCommand(commandWithPrefix, s, m, h.Bot)
 
 }
