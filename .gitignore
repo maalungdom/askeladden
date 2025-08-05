@@ -2,3 +2,11 @@ token.txt
 config.yaml
 secrets*.yaml
 *secrets*
+
+# Binaries
+askeladden
+askeladden-*
+*.exe
+*.dll
+*.so
+*.dylib
