@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	Register("❓", "Ask a question.", handleQuestionReaction)
+	Register("❓", "Spør eit spørsmål.", handleQuestionReaction)
 }
 
 func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, bot bot.BotIface) {

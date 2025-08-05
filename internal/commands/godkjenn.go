@@ -13,7 +13,7 @@ import (
 func init() {
 	commands["!godkjenn"] = Command{
 		name:        "!godkjenn",
-		description: "Godkjenn eit spørsmål manuelt (kun for opplysarar)",
+		description: "Godkjenn eit spørsmål for hand (kun for opplysarar)",
 		emoji:       "✅",
 		handler:   Godkjenn,
 		aliases:     []string{},
@@ -36,7 +36,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface
 
 	if arg == "alle" {
 		// TODO: Implement ApproveAllPendingQuestions functionality
-		embed := services.CreateBotEmbed(s, "⚠️ Ikkje implementert", "Godkjenning av alle spørsmål er ikkje implementert ennå.", 0xffa500)
+		embed := services.CreateBotEmbed(s, "⚠️ Ikkje implementert", "Godkjenning av alle spørsmål er ikkje enno implementert.", 0xffa500)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -49,7 +49,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface
 		question, err = db.GetPendingQuestion()
 		if err != nil {
 			log.Printf("Failed to get next pending question: %v", err)
-			embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved henting av neste spørsmål.", 0xff0000)
+			embed := services.CreateBotEmbed(s, "❌ Feil", "Mislukkast i å hente neste spørsmål.", 0xff0000)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 			
 			return
@@ -64,7 +64,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface
 		// Try to parse as question ID
 		questionID, parseErr := strconv.Atoi(arg)
 		if parseErr != nil {
-			embed := services.CreateBotEmbed(s, "❓ Feil", "Ugyldig spørsmål-ID. Bruk eit tal eller 'next' for neste ventande spørsmål.", 0xff0000)
+			embed := services.CreateBotEmbed(s, "❓ Feil", "Ugyldig spørsmål-ID. Bruk eit tal eller «next» for neste ventande spørsmål.", 0xff0000)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 			
 			return
@@ -109,7 +109,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface
 			approverName = approver.Username
 		}
 
-		embed := services.CreateBotEmbed(s, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt har blitt godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
+		embed := services.CreateBotEmbed(s, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
 		s.ChannelMessageSendEmbed(privateChannel.ID, embed)
 		
 	}
@@ -117,3 +117,4 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIface
 	log.Printf("Question manually approved by %s: %s", m.Author.Username, question.Question)
 }
 
+Denne flettingsførespurnaden

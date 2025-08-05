@@ -13,7 +13,7 @@ import (
 func init() {
 	commands["!poke"] = Command{
 		name:        "!poke",
-		description: "Trigger dagens spørsmål manuelt (kun admin)",
+		description: "Utløys dagens spørsmål for hand (kun admin)",
 		emoji:       "👉",
 		handler:   handlePoke,
 		adminOnly:   true,
@@ -41,7 +41,7 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIfa
 
 	if question == nil {
 		log.Println("No approved questions available")
-		embed := services.CreateBotEmbed(s, "😔 Ingen godkjente spørsmål", "Ingen godkjente spørsmål tilgjengelege for no.", 0xffff00)
+		embed := services.CreateBotEmbed(s, "😔 Ingen godkjente spørsmål", "Ingen godkjente spørsmål tilgjengelege for augneblinken.", 0xffff00)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -72,7 +72,7 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot bot.BotIfa
 	if err != nil {
 		log.Printf("[DATABASE] Failed to get question stats: %v", err)
 	} else {
-			statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`, 
+			statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`,
 				totalApproved, totalAsked+1, minAsked)
 			embed := services.CreateBotEmbed(s, "📊 Statistikk", statsMessage, 0x3399ff)
 			s.ChannelMessageSendEmbed(bot.GetConfig().Discord.LogChannelID, embed)

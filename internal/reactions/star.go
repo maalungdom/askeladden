@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	Register("⭐", "Add a message to the starboard", handleStarReaction)
+	Register("⭐", "Legg til ei melding på stjernebrettet", handleStarReaction)
 }
 
 func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b bot.BotIface) {
@@ -59,8 +59,8 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 		// Add original message link
 		embed.Fields = []*discordgo.MessageEmbedField{
 			{
-				Name:   "Original Message",
-				Value:  fmt.Sprintf("[Jump to Message](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID),
+				Name:   "Opphaveleg melding",
+				Value:  fmt.Sprintf("[Hopp til melding](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID),
 				Inline: false,
 			},
 		}

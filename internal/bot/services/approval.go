@@ -88,7 +88,7 @@ func (s *ApprovalService) NotifyUserApproval(session *discordgo.Session, questio
 		approverName = approver.Username
 	}
 
-	embed := CreateBotEmbed(session, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt har blitt godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
+	embed := CreateBotEmbed(session, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
 	_, err = session.ChannelMessageSendEmbed(privateChannel.ID, embed)
 	if err != nil {
 		log.Printf("Failed to send approval notification to user: %v", err)
