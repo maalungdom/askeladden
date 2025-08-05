@@ -3,10 +3,16 @@ config.yaml
 secrets*.yaml
 *secrets*
 
-# Binaries
+# Binaries and build outputs
 askeladden
 askeladden-*
 *.exe
 *.dll
 *.so
 *.dylib
+
+# Go build artifacts
+/dist/
+/build/
+*-binary
+test-*
