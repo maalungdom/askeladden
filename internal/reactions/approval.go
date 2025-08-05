@@ -8,9 +8,7 @@ import (
 	"roersla.no/askeladden/internal/bot"
 	"roersla.no/askeladden/internal/bot/services"
 )
-func init() {
-	Register("👍", "Approve a question.", handleApprovalReaction).SetAdminOnly()
-}
+// handleApprovalReaction is registered dynamically in InitializeReactions
 
 func handleApprovalReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
 	// Get the question by approval message ID

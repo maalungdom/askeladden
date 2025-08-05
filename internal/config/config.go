@@ -21,6 +21,7 @@ type Config struct {
 	Starboard struct {
 		ChannelID string `yaml:"channelID"`
 		Threshold int    `yaml:"threshold"`
+		Emoji     string `yaml:"emoji"`
 	} `yaml:"starboard"`
 
 	Database struct {
@@ -32,8 +33,18 @@ type Config struct {
 	} `yaml:"database"`
 
 	Scheduler struct {
-		CronString string `yaml:"cron_string"`
+		CronString       string `yaml:"cron_string"`
+		Timezone         string `yaml:"timezone"`
+		MorningTime      string `yaml:"morning_time"`
+		EveningTime      string `yaml:"evening_time"`
+		InactivityHours  int    `yaml:"inactivity_hours"`
+		Enabled          bool   `yaml:"enabled"`
 	} `yaml:"scheduler"`
+
+	// Reaction emojis
+	Reactions struct {
+		Question string `yaml:"question"`
+	} `yaml:"reactions"`
 
 	// Beta environment settings
 	Environment   string `yaml:"environment"`

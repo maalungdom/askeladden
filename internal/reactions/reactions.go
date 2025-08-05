@@ -51,3 +51,18 @@ func IsAdminReaction(emoji string) bool {
 	return false
 }
 
+// InitializeReactions registers all reactions with their configured emojis
+func InitializeReactions(b *bot.Bot) {
+	// Register starboard reaction
+	RegisterStarboardReaction(b)
+	
+	// Register question reaction
+	RegisterQuestionReaction(b)
+	
+	// Register approval reaction (static emoji)
+	Register("👍", "Approve a question.", handleApprovalReaction).SetAdminOnly()
+	
+	// Register reject reaction (static emoji) 
+	Register("👎", "Reject a question.", handleRejectReaction).SetAdminOnly()
+}
+

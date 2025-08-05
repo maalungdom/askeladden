@@ -9,8 +9,10 @@ import (
 	"roersla.no/askeladden/internal/bot"
 )
 
-func init() {
-	Register("⭐", "Add a message to the starboard", handleStarReaction)
+// RegisterStarboardReaction registers the starboard reaction with the configured emoji
+func RegisterStarboardReaction(b *bot.Bot) {
+	emoji := b.Config.Starboard.Emoji
+	Register(emoji, "Add a message to the starboard", handleStarReaction)
 }
 
 func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
@@ -29,10 +31,10 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 		return
 	}
 
-	// Count total star reactions
+	// Count total starboard reactions
 	stars := 0
 	for _, reaction := range msg.Reactions {
-		if reaction.Emoji.Name == "⭐" {
+		if reaction.Emoji.Name == b.Config.Starboard.Emoji {
 			stars = reaction.Count
 			break
 		}
@@ -50,7 +52,7 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 			},
 			Description: msg.Content,
 			Footer: &discordgo.MessageEmbedFooter{
-				Text: fmt.Sprintf("⭐ %d | #%s", stars, getChannelName(s, r.ChannelID)),
+				Text: fmt.Sprintf("%s %d | #%s", b.Config.Starboard.Emoji, stars, getChannelName(s, r.ChannelID)),
 			},
 			Timestamp: string(msg.Timestamp.Format(time.RFC3339)),
 			Color:     0xFFD700, // Gold color

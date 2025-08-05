@@ -94,3 +94,26 @@ func (s *ApprovalService) NotifyUserApproval(session *discordgo.Session, questio
 		log.Printf("Failed to send approval notification to user: %v", err)
 	}
 }
+
+// NotifyUserRejection notifies the user that their question was rejected.
+func (s *ApprovalService) NotifyUserRejection(session *discordgo.Session, question *database.Question, rejectorID string) {
+	privateChannel, err := session.UserChannelCreate(question.AuthorID)
+	if err != nil {
+		log.Printf("Failed to create private channel for rejection notification: %v", err)
+		return
+	}
+
+	rejector, err := session.User(rejectorID)
+	var rejectorName string
+	if err != nil {
+		rejectorName = "ein opplysar"
+	} else {
+		rejectorName = rejector.Username
+	}
+
+	embed := CreateBotEmbed(session, "❌ Spørsmål avvist", fmt.Sprintf("Spørsmålet ditt har blitt avvist av %s.\n\n**\"%s\"**\n\nDu kan prøve å sende inn eit anna spørsmål som passar betre.", rejectorName, question.Question), 0xff0000)
+	_, err = session.ChannelMessageSendEmbed(privateChannel.ID, embed)
+	if err != nil {
+		log.Printf("Failed to send rejection notification to user: %v", err)
+	}
+}

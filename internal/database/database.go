@@ -15,6 +15,7 @@ type DatabaseIface interface {
 	AddQuestion(question, authorID, authorName, messageID, channelID string) (int64, error)
 	GetQuestionByMessageID(messageID string) (*Question, error)
 	ApproveQuestion(questionID int, approverID string) error
+	RejectQuestion(questionID int, rejectorID string) error
 	GetPendingQuestion() (*Question, error)
 	UpdateApprovalMessageID(questionID int, approvalMessageID string) error
 	GetQuestionByApprovalMessageID(approvalMessageID string) (*Question, error)
@@ -163,7 +164,7 @@ func (db *DB) GetQuestionByMessageID(messageID string) (*Question, error) {
 // ApproveQuestion updates the approval status for a question
 func (db *DB) ApproveQuestion(questionID int, approverID string) error {
     log.Printf("Approving question ID %d by approver %s", questionID, approverID)
-    query := `UPDATE " + db.tableName + " SET approval_status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?`
+    query := fmt.Sprintf("UPDATE %s SET approval_status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?", db.tableName)
     _, err := db.conn.Exec(query, approverID, questionID)
     if err != nil {
         log.Printf("Failed to approve question ID %d: %v", questionID, err)
@@ -173,10 +174,23 @@ func (db *DB) ApproveQuestion(questionID int, approverID string) error {
     return nil
 }
 
+// RejectQuestion updates the approval status for a question to rejected
+func (db *DB) RejectQuestion(questionID int, rejectorID string) error {
+    log.Printf("Rejecting question ID %d by rejector %s", questionID, rejectorID)
+    query := fmt.Sprintf("UPDATE %s SET approval_status = 'rejected', approved_by = ?, approved_at = NOW() WHERE id = ?", db.tableName)
+    _, err := db.conn.Exec(query, rejectorID, questionID)
+    if err != nil {
+        log.Printf("Failed to reject question ID %d: %v", questionID, err)
+        return err
+    }
+    log.Printf("Successfully rejected question ID %d", questionID)
+    return nil
+}
+
 // GetPendingQuestion retrieves the next pending question for approval
 func (db *DB) GetPendingQuestion() (*Question, error) {
     log.Println("Retrieving next pending question")
-    query := `SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM " + db.tableName + " WHERE approval_status = 'pending' ORDER BY created_at ASC LIMIT 1`
+    query := fmt.Sprintf("SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM %s WHERE approval_status = 'pending' ORDER BY created_at ASC LIMIT 1", db.tableName)
     var q Question
     err := db.conn.QueryRow(query).Scan(&q.ID, &q.Question, &q.AuthorID, &q.AuthorName, &q.CreatedAt, &q.TimesAsked, &q.LastAskedAt, &q.MessageID, &q.ChannelID, &q.ApprovalStatus, &q.ApprovalMessageID, &q.ApprovedBy, &q.ApprovedAt)
     if err != nil {
@@ -194,7 +208,7 @@ func (db *DB) GetPendingQuestion() (*Question, error) {
 // UpdateApprovalMessageID updates the approval message ID for a question
 func (db *DB) UpdateApprovalMessageID(questionID int, approvalMessageID string) error {
 	log.Printf("Updating approval message ID for question %d: %s", questionID, approvalMessageID)
-	query := `UPDATE " + db.tableName + " SET approval_message_id = ? WHERE id = ?`
+	query := fmt.Sprintf("UPDATE %s SET approval_message_id = ? WHERE id = ?", db.tableName)
 	_, err := db.conn.Exec(query, approvalMessageID, questionID)
 	if err != nil {
 		log.Printf("Failed to update approval message ID for question %d: %v", questionID, err)
@@ -207,7 +221,7 @@ func (db *DB) UpdateApprovalMessageID(questionID int, approvalMessageID string) 
 // GetQuestionByApprovalMessageID gets a question by its approval message ID
 func (db *DB) GetQuestionByApprovalMessageID(approvalMessageID string) (*Question, error) {
 	log.Printf("Looking up question by approval message ID: %s", approvalMessageID)
-	query := `SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM " + db.tableName + " WHERE approval_message_id = ?`
+	query := fmt.Sprintf("SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM %s WHERE approval_message_id = ?", db.tableName)
 	var q Question
 	err := db.conn.QueryRow(query, approvalMessageID).Scan(
 		&q.ID, &q.Question, &q.AuthorID, &q.AuthorName, &q.CreatedAt, &q.TimesAsked, &q.LastAskedAt, &q.MessageID, &q.ChannelID,
@@ -228,7 +242,8 @@ func (db *DB) GetQuestionByApprovalMessageID(approvalMessageID string) (*Questio
 // GetPendingQuestionByID gets a pending question by its question ID
 func (db *DB) GetPendingQuestionByID(questionID int) (*Question, error) {
 	log.Printf("Looking up pending question by question ID: %d", questionID)
-	query := `SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM " + db.tableName + " WHERE id = ? AND approval_status = 'pending'`
+	query := fmt.Sprintf("SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM %s WHERE id = ? AND approval_status = 'pending'", db.tableName)
+	log.Printf("[DEBUG] SQL Query: %s", query)
 	var q Question
 	err := db.conn.QueryRow(query, questionID).Scan(
 		&q.ID, &q.Question, &q.AuthorID, &q.AuthorName, &q.CreatedAt, &q.TimesAsked, &q.LastAskedAt, &q.MessageID, &q.ChannelID,
@@ -252,21 +267,21 @@ func (db *DB) GetApprovalStats() (int, int, int, error) {
 	var pending, approved, rejected int
 	
 	// Get pending count
-	pendingQuery := `SELECT COUNT(*) FROM " + db.tableName + " WHERE approval_status = 'pending'`
+	pendingQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'pending'", db.tableName)
 	err := db.conn.QueryRow(pendingQuery).Scan(&pending)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	
 	// Get approved count
-	approvedQuery := `SELECT COUNT(*) FROM " + db.tableName + " WHERE approval_status = 'approved'`
+	approvedQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err = db.conn.QueryRow(approvedQuery).Scan(&approved)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	
 	// Get rejected count
-	rejectedQuery := `SELECT COUNT(*) FROM " + db.tableName + " WHERE approval_status = 'rejected'`
+	rejectedQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'rejected'", db.tableName)
 	err = db.conn.QueryRow(rejectedQuery).Scan(&rejected)
 	if err != nil {
 		return 0, 0, 0, err
@@ -278,11 +293,11 @@ func (db *DB) GetApprovalStats() (int, int, int, error) {
 // GetLeastAskedApprovedQuestion gets the least asked approved question for equal distribution
 func (db *DB) GetLeastAskedApprovedQuestion() (*Question, error) {
 	log.Println("Retrieving least asked approved question")
-	query := `SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at 
-		  FROM " + db.tableName + " 
+	query := fmt.Sprintf(`SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at 
+		  FROM %s 
 		  WHERE approval_status = 'approved' 
 		  ORDER BY times_asked ASC, created_at ASC 
-		  LIMIT 1`
+		  LIMIT 1`, db.tableName)
 	var q Question
 	err := db.conn.QueryRow(query).Scan(
 		&q.ID, &q.Question, &q.AuthorID, &q.AuthorName, &q.CreatedAt, &q.TimesAsked, &q.LastAskedAt,
@@ -304,7 +319,7 @@ func (db *DB) GetLeastAskedApprovedQuestion() (*Question, error) {
 // IncrementQuestionUsage increments the times_asked count and updates last_asked_at for a question
 func (db *DB) IncrementQuestionUsage(questionID int) error {
 	log.Printf("[DATABASE] Incrementing usage count for question ID %d", questionID)
-	query := `UPDATE " + db.tableName + " SET times_asked = times_asked + 1, last_asked_at = NOW() WHERE id = ?`
+	query := fmt.Sprintf("UPDATE %s SET times_asked = times_asked + 1, last_asked_at = NOW() WHERE id = ?", db.tableName)
 	_, err := db.conn.Exec(query, questionID)
 	if err != nil {
 		log.Printf("[DATABASE] Failed to increment usage count for question ID %d: %v", questionID, err)
@@ -319,21 +334,21 @@ func (db *DB) GetApprovedQuestionStats() (int, int, int, error) {
 	var totalApproved, totalAsked, minAsked int
 	
 	// Get total approved questions count
-	totalApprovedQuery := `SELECT COUNT(*) FROM " + db.tableName + " WHERE approval_status = 'approved'`
+	totalApprovedQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err := db.conn.QueryRow(totalApprovedQuery).Scan(&totalApproved)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	
 	// Get total times questions have been asked
-	totalAskedQuery := `SELECT COALESCE(SUM(times_asked), 0) FROM " + db.tableName + " WHERE approval_status = 'approved'`
+	totalAskedQuery := fmt.Sprintf("SELECT COALESCE(SUM(times_asked), 0) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err = db.conn.QueryRow(totalAskedQuery).Scan(&totalAsked)
 	if err != nil {
 		return 0, 0, 0, err
 	}
 	
 	// Get minimum times asked (for equal distribution tracking)
-	minAskedQuery := `SELECT COALESCE(MIN(times_asked), 0) FROM " + db.tableName + " WHERE approval_status = 'approved'`
+	minAskedQuery := fmt.Sprintf("SELECT COALESCE(MIN(times_asked), 0) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err = db.conn.QueryRow(minAskedQuery).Scan(&minAsked)
 	if err != nil {
 		return 0, 0, 0, err
@@ -350,7 +365,7 @@ func (db *DB) Close() error {
 // ClearDatabase drops all tables from the database
 func (db *DB) ClearDatabase() error {
 	log.Println("Clearing the database")
-	query := `DROP TABLE IF EXISTS " + db.tableName + "`
+	query := fmt.Sprintf("DROP TABLE IF EXISTS %s", db.tableName)
 	_, err := db.conn.Exec(query)
 	if err != nil {
 		log.Printf("Failed to clear the database: %v", err)

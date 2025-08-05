@@ -10,6 +10,7 @@ approval:
 starboard:
   channelID: "1402262710279864370"  # stjernebrettet
   threshold: 1
+  emoji: "🌟"  # Beta uses 🌟 instead of ⭐ to avoid collision
 
 database:
   host: "malfolketno01.mysql.domeneshop.no"
@@ -18,7 +19,15 @@ database:
   # Beta will use daily_questions_testing table instead of daily_questions
 
 scheduler:
-  cron_string: "0 10 * * *"  # 10:00 kvar dag for testing
+  enabled: true
+  timezone: "Europe/Oslo"
+  morning_time: "08:00"     # 08:00 European time
+  evening_time: "20:00"     # 20:00 European time
+  inactivity_hours: 6       # Post after 6 hours of inactivity
+  cron_string: "0 8 * * *"  # Fallback: 08:00 daily
+
+reactions:
+  question: "🔶"  # Beta uses 🔶 instead of ❓ to avoid collision
 
 # Beta-specific settings
 environment: "beta"

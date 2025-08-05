@@ -8,8 +8,10 @@ import (
 	"roersla.no/askeladden/internal/bot/services"
 )
 
-func init() {
-	Register("❓", "Ask a question.", handleQuestionReaction)
+// RegisterQuestionReaction registers the question reaction with the configured emoji
+func RegisterQuestionReaction(b *bot.Bot) {
+	emoji := b.Config.Reactions.Question
+	Register(emoji, "Ask a question.", handleQuestionReaction)
 }
 
 func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, bot *bot.Bot) {

@@ -12,6 +12,7 @@ import (
 	"roersla.no/askeladden/internal/bot/services"
 	"roersla.no/askeladden/internal/config"
 	"roersla.no/askeladden/internal/database"
+	"roersla.no/askeladden/internal/reactions"
 )
 
 func main() {
@@ -38,6 +39,9 @@ func main() {
 
 	// Opprett bot
 	askeladden := bot.New(cfg, db, session)
+
+	// Initialize reactions with configured emojis
+	reactions.InitializeReactions(askeladden)
 
 	// Opprett tenester og handterarar
 	botServices := services.New(askeladden)
