@@ -1,7 +1,7 @@
 package services
 
 import (
-	"roersla.no/askeladden/internal/bot"
+	"askeladden/internal/bot"
 )
 
 

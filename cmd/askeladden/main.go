@@ -7,17 +7,27 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/bot/handlers"
-	"roersla.no/askeladden/internal/bot/services"
-	"roersla.no/askeladden/internal/config"
-	"roersla.no/askeladden/internal/database"
-	"roersla.no/askeladden/internal/reactions"
+	"askeladden/internal/bot"
+	"askeladden/internal/bot/handlers"
+	"askeladden/internal/bot/services"
+	"askeladden/internal/config"
+	"askeladden/internal/database"
+	"askeladden/internal/reactions"
 )
 
 func main() {
-	// Last inn konfigurasjon
-	cfg, err := config.Load()
+// Load configuration using environment variables for file paths
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile == "" {
+		configFile = "config.yaml"
+	}
+
+	secretsFile := os.Getenv("SECRETS_FILE")
+	if secretsFile == "" {
+		secretsFile = "secrets.yaml"
+	}
+
+	cfg, err := config.LoadWithFiles(configFile, secretsFile)
 	if err != nil {
 		log.Fatalf("[MAIN] Could not load configuration: %v", err)
 	}

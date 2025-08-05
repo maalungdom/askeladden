@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
+	"askeladden/internal/bot"
 )
 
 // RegisterStarboardReaction registers the starboard reaction with the configured emoji

@@ -7,6 +7,13 @@ approval:
   queueChannelID: "1402262743779774568"  # spørsmål (approval queue)
   opplysarRoleID: "1402262871966224444"  # utiviklar (admin rolle)
 
+bannedwords:
+  approvalChannelID: "1402312367542374532"  # retting (banned word approval)
+  rettskrivarRoleID: "1381943546503761941"  # rettskrivar role
+
+grammar:
+  channelID: "1402287744985727167"  # grammatikk (for threads)
+
 starboard:
   channelID: "1402262710279864370"  # stjernebrettet
   threshold: 1

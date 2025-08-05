@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/bot/services"
+	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 )
 
 type SchedulerState struct {

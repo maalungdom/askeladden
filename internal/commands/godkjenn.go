@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/database"
-	"roersla.no/askeladden/internal/bot/services"
+	"askeladden/internal/bot"
+	"askeladden/internal/database"
+	"askeladden/internal/bot/services"
 )
 func init() {
 	commands["godkjenn"] = Command{

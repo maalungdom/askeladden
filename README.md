@@ -2,11 +2,39 @@
 
 Askeladden is a bot.
 
-## Running the bot
+## Building and Running
 
-To run the bot, you need to have a `config.yaml` file in the root directory. You can then run the bot using the following command:
+### Building
+
+To build the bot, run the following command. This will create an executable named `askeladden`.
 
 ```bash
-./main -config config.yaml
+go build -o askeladden
 ```
+
+### Running
+
+You can run the bot with different configurations by setting the `CONFIG_FILE` and `SECRETS_FILE` environment variables. If these variables are not set, the bot will default to `config.yaml` and `secrets.yaml` respectively.
+
+**Production:**
+
+```bash
+./askeladden
+```
+
+**Beta:**
+
+To run the bot in beta mode, follow these steps:
+
+1. Ensure you are in the `/Users/eg/rørsla/askeladden` directory.
+
+2. Use the following command to build the bot:
+   ```bash
+   go build ./cmd/askeladden
+   ```
+
+3. Run the bot with:
+   ```bash
+   CONFIG_FILE=config-beta.yaml SECRETS_FILE=secrets-beta.yaml ./askeladden-beta
+   ```
 

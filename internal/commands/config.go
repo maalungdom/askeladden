@@ -2,16 +2,18 @@ package commands
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/bot/services"
+	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 )
 
 func init() {
 	commands["config"] = Command{
 		name:        "config",
-		description: "Vis noverande bot-konfigurasjon (ikkje hemmelege opplysningar)",
+		description: "Vis gjeldende bot-konfigurasjon (uten hemmelige opplysninger)",
 		emoji:       "🔧",
 		handler:     handleConfigCommand,
 		adminOnly:   true,
@@ -20,40 +22,26 @@ func init() {
 
 func handleConfigCommand(s *discordgo.Session, m *discordgo.MessageCreate, b *bot.Bot) {
 	cfg := b.Config
+
+	configInfo := "**🔧 Bot Configuration**\n\n"
 	
-	// Build configuration display (excluding secrets)
-	configInfo := fmt.Sprintf("**🔧 Bot Configuration**\n\n"+
-		"**Discord Settings:**\n"+
-		"• Prefix: `%s`\n"+
-		"• Log Channel: <#%s>\n"+
-		"• Default Channel: <#%s>\n\n"+
-		"**Approval Settings:**\n"+
-		"• Queue Channel: <#%s>\n"+
-		"• Admin Role: <@&%s>\n\n"+
-		"**Starboard Settings:**\n"+
-		"• Channel: <#%s>\n"+
-		"• Threshold: %d reactions\n"+
-		"• Emoji: %s\n\n"+
-		"**Reaction Emojis:**\n"+
-		"• Question: %s\n"+
-		"• Approval: 👍\n"+
-		"• Reject: 👎\n\n"+
-		"**Database Settings:**\n"+
-		"• Host: %s\n"+
-		"• Port: %d\n"+
-		"• Database: %s",
-		cfg.Discord.Prefix,
-		cfg.Discord.LogChannelID,
-		cfg.Discord.DefaultChannelID,
-		cfg.Approval.QueueChannelID,
-		cfg.Approval.OpplysarRoleID,
-		cfg.Starboard.ChannelID,
-		cfg.Starboard.Threshold,
-		cfg.Starboard.Emoji,
-		cfg.Reactions.Question,
-		cfg.Database.Host,
-		cfg.Database.Port,
-		cfg.Database.DBName)
+	// Use reflection to iterate through the config struct dynamically
+	v := reflect.ValueOf(cfg).Elem()
+	t := v.Type()
+	
+	for i := 0; i < v.NumField(); i++ {
+		section := v.Field(i)
+		sectionType := section.Type()
+		
+		configInfo += fmt.Sprintf("**%s Settings:**\n", t.Field(i).Name)
+		
+		for j := 0; j < section.NumField(); j++ {
+			field := section.Field(j)
+			fieldName := sectionType.Field(j).Name
+			configInfo += fmt.Sprintf("• %s: %v\n", fieldName, field.Interface())
+		}
+		configInfo += "\n"
+	}
 
 	// Add environment-specific info if present
 	if cfg.Environment != "" {
@@ -80,9 +68,10 @@ func handleConfigCommand(s *discordgo.Session, m *discordgo.MessageCreate, b *bo
 	}
 
 	// Send as embed
-	embed := services.CreateBotEmbed(s, "Configuration", configInfo, 0x0099ff)
+	embed := services.CreateBotEmbed(s, "🔧 Configuration", configInfo, 0x0099ff)
 	_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	if err != nil {
-		s.ChannelMessageSend(m.ChannelID, "Fekk ikkje sendt konfigurasjonsinformasjon.")
+		log.Printf("Failed to send config embed: %v", err)
+		s.ChannelMessageSend(m.ChannelID, "Kunne ikke sende konfigurasjonsinformasjon.")
 	}
 }

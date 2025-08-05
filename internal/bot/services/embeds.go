@@ -3,7 +3,7 @@ package services
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/database"
+	"askeladden/internal/database"
 )
 
 // createDailyQuestionEmbed creates the embed for the daily question

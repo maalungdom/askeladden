@@ -3,10 +3,11 @@ package services
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/database"
+	"askeladden/internal/bot"
+	"askeladden/internal/database"
 )
 
 // ApprovalService handles logic for question approval.
@@ -33,7 +34,26 @@ func (s *ApprovalService) postToApprovalQueue(session *discordgo.Session, questi
 		return
 	}
 
-	approvalEmbed := CreateBotEmbed(session, "📝 Nytt spørsmål til godkjenning", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n\nReager med 👍 for å godkjenne!", question.Question, question.AuthorName), 0xffa500)
+	// Get the author's user info
+	author, err := session.User(question.AuthorID)
+	var authorName, avatarURL string
+	if err == nil {
+		authorName = author.Username
+		avatarURL = author.AvatarURL("")
+	} else {
+		authorName = question.AuthorName // Fallback to stored name
+		avatarURL = ""
+	}
+
+	approvalEmbed := &discordgo.MessageEmbed{
+		Title:       question.Question,
+		Description: "⏳ Opplysar-godkjenning: ventar",
+		Color:       0xff0000, // Red, same as banned words
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    authorName,
+			IconURL: avatarURL,
+		},
+	}
 
 	approvalMessage, err := session.ChannelMessageSendEmbed(s.Bot.Config.Approval.QueueChannelID, approvalEmbed)
 	if err != nil {
@@ -72,6 +92,27 @@ func (s *ApprovalService) UserHasOpplysarRole(session *discordgo.Session, guildI
 	return false
 }
 
+// UserHasRettskrivarRole checks if a user has the rettskrivar role.
+func (s *ApprovalService) UserHasRettskrivarRole(session *discordgo.Session, guildID, userID string) bool {
+	if s.Bot.Config.BannedWords.RettskrivarRoleID == "" {
+		return false
+	}
+
+	member, err := session.GuildMember(guildID, userID)
+	if err != nil {
+		log.Printf("Failed to get guild member: %v", err)
+		return false
+	}
+
+	for _, roleID := range member.Roles {
+		if roleID == s.Bot.Config.BannedWords.RettskrivarRoleID {
+			return true
+		}
+	}
+
+	return false
+}
+
 // NotifyUserApproval notifies the user that their question was approved.
 func (s *ApprovalService) NotifyUserApproval(session *discordgo.Session, question *database.Question, approverID string) {
 	privateChannel, err := session.UserChannelCreate(question.AuthorID)
@@ -80,19 +121,181 @@ func (s *ApprovalService) NotifyUserApproval(session *discordgo.Session, questio
 		return
 	}
 
-	approver, err := session.User(approverID)
-	var approverName string
-	if err != nil {
-		approverName = "ein opplysar"
-	} else {
-		approverName = approver.Username
-	}
-
-	embed := CreateBotEmbed(session, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
+	embed := CreateBotEmbed(session, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av <@%s>!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverID, question.Question), 0x00ff00)
 	_, err = session.ChannelMessageSendEmbed(privateChannel.ID, embed)
 	if err != nil {
 		log.Printf("Failed to send approval notification to user: %v", err)
 	}
+}
+
+// PostPendingBannedWordToRettingChannel posts a newly created banned word to the retting channel for approval.
+func (s *ApprovalService) PostPendingBannedWordToRettingChannel(bannedWordID int64) {
+	// Get the specific banned word by ID
+	bannedWord, err := s.Bot.Database.GetBannedWordByID(int(bannedWordID))
+	if err != nil {
+		log.Printf("Failed to get banned word for retting channel posting: %v", err)
+		return
+	}
+	
+	if bannedWord == nil {
+		log.Printf("No banned word found with ID %d", bannedWordID)
+		return
+	}
+
+	channelID := s.Bot.Config.BannedWords.ApprovalChannelID
+	if channelID == "" {
+		log.Println("Retting channel is not configured")
+		return
+	}
+
+	// Create embed with hammer user as author
+	// Get the hammer user info
+	hammerUser, err := s.Bot.Session.User(bannedWord.AuthorID)
+	var authorName, avatarURL string
+	if err == nil {
+		authorName = hammerUser.Username
+		avatarURL = hammerUser.AvatarURL("")
+	} else {
+		authorName = bannedWord.AuthorName
+		avatarURL = ""
+	}
+
+	approvalEmbed := &discordgo.MessageEmbed{
+		Title: bannedWord.Word,
+		Description: "⏳ Opplysar-godkjenning: ventar\n⏳ Rettskrivar-godkjenning: ventar",
+		Color: 0xff0000, // Red
+		Author: &discordgo.MessageEmbedAuthor{
+			Name: authorName,
+			IconURL: avatarURL,
+		},
+	}
+
+	message, err := s.Bot.Session.ChannelMessageSendEmbed(channelID, approvalEmbed)
+	if err != nil {
+		log.Printf("Failed to post to retting channel: %v", err)
+		return
+	}
+
+	// Add reaction emoji
+	s.Bot.Session.MessageReactionAdd(channelID, message.ID, "👍")
+
+	// Update the database with the approval message ID
+	err = s.Bot.Database.UpdateBannedWordApprovalMessageID(int(bannedWord.ID), message.ID)
+	if err != nil {
+		log.Printf("Failed to update approval message ID: %v", err)
+	}
+}
+
+// PostBannedWordReport creates a forum post in the grammar channel for banned word discussion
+// Returns the forum thread if a new one was created, or nil if referencing existing threads
+func (s *ApprovalService) PostBannedWordReport(session *discordgo.Session, words []string, reporterID string, guildID string, originalChannelID string, originalMessageID string) *discordgo.Channel {
+	if s.Bot.Config.Grammar.ChannelID == "" {
+		log.Println("Grammar channel not configured")
+		return nil
+	}
+
+	// Get reporter info
+	reporter, err := session.User(reporterID)
+	reporterName := "Unknown User"
+	if err == nil {
+		reporterName = reporter.Username
+	}
+
+	// For newly approved banned words, always create a forum thread
+	// Check if any words already have forum threads (for logging purposes)
+	var existingThreads []string
+	
+	for _, word := range words {
+		isBanned, bannedWord, err := s.Bot.Database.IsBannedWord(word)
+		if err != nil {
+			log.Printf("Error checking if word '%s' is banned: %v", word, err)
+			continue
+		}
+		
+		if isBanned && bannedWord.ForumThreadID != nil && *bannedWord.ForumThreadID != "" {
+			// Word already exists with a forum thread
+			existingThreads = append(existingThreads, *bannedWord.ForumThreadID)
+			log.Printf("Word '%s' already exists with forum thread %s", word, *bannedWord.ForumThreadID)
+		}
+	}
+
+	// Always create forum threads for newly approved words
+	newWords := words
+
+	// Create forum post for new words - use just the word as title
+	postTitle := strings.Join(newWords, ", ")
+	if len(postTitle) > 100 {
+		postTitle = postTitle[:97] + "..."
+	}
+
+	// Note: We no longer need guild ID since we simplified the forum message
+
+	// Create forum post (thread in forum channel) with minimal initial message
+	initialMessage := "🔨 Grammatikkdiskusjon"
+	thread, err := session.ForumThreadStart(s.Bot.Config.Grammar.ChannelID, postTitle, 60, initialMessage)
+	if err != nil {
+		log.Printf("Failed to create forum post (may require approval): %v", err)
+		// Forum post creation failed - likely requires manual approval
+		// Return nil so words are still added to database without thread reference
+		return nil
+	}
+
+	// Now send a proper embed as the main discussion starter
+	var originalInfo string
+	if originalChannelID != "" && originalMessageID != "" {
+		// Create a Discord link for the original message
+		originalInfo = fmt.Sprintf("[Hopp til opphavleg melding](https://discord.com/channels/%s/%s/%s)", guildID, originalChannelID, originalMessageID)
+	} else if originalMessageID != "" {
+		// We have message ID but not channel ID - show what we can
+		originalInfo = fmt.Sprintf("Meldings-ID: `%s`", originalMessageID)
+	} else {
+		originalInfo = "Informasjon om opphavleg melding ikkje tilgjengeleg"
+	}
+
+	// Get additional reporter info for embed author (reuse existing reporter variable)
+	var reporterAvatarURL string
+	if err == nil {
+		reporterAvatarURL = reporter.AvatarURL("")
+	} else {
+		reporterName = "Ukjend brukar"
+		reporterAvatarURL = ""
+	}
+
+	// Create discussion embed
+	discussionEmbed := &discordgo.MessageEmbed{
+		Title: "📝 Grammatikkdiskusjon: " + strings.Join(words, ", "),
+		Description: "Dette ordet/desse orda har vorte rapporterte som grammatisk feil.",
+		Color: 0xff6b35, // Orange color
+		Author: &discordgo.MessageEmbedAuthor{
+			Name: "Rapportert av " + reporterName,
+			IconURL: reporterAvatarURL,
+		},
+		Fields: []*discordgo.MessageEmbedField{
+			{
+				Name: "📍 Opphavleg melding",
+				Value: originalInfo,
+				Inline: false,
+			},
+			{
+				Name: "💡 Diskusjonsrettleiing",
+				Value: "• Forklar kvifor ordet er feil\n• Gje korrekte alternativ\n• Del relevante reglar eller kjelder",
+				Inline: false,
+			},
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "Ver snill og diskuter på ein konstruktiv måte",
+		},
+	}
+
+	// Send the embed to the thread
+	_, err = session.ChannelMessageSendEmbed(thread.ID, discussionEmbed)
+	if err != nil {
+		log.Printf("Failed to send discussion embed to forum thread: %v", err)
+		// Continue anyway, the thread was created successfully
+	}
+
+	log.Printf("Created forum post %s (%s) for banned word discussion", thread.Name, thread.ID)
+	return thread
 }
 
 // NotifyUserRejection notifies the user that their question was rejected.

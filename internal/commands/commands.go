@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
+	"askeladden/internal/bot"
 )
 
 // Command defines the structure for a command

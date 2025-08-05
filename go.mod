@@ -1,4 +1,4 @@
-module roersla.no/askeladden
+module askeladden
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
@@ -6,8 +6,6 @@ require (
 )
 
 go 1.24.1
-
-replace roersla.no/askeladden => ./
 
 require (
 	github.com/go-sql-driver/mysql v1.9.3

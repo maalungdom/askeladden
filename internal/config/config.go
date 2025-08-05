@@ -18,6 +18,15 @@ type Config struct {
 		OpplysarRoleID string `yaml:"opplysarRoleID"`
 	} `yaml:"approval"`
 
+	BannedWords struct {
+		ApprovalChannelID string `yaml:"approvalChannelID"`
+		RettskrivarRoleID string `yaml:"rettskrivarRoleID"`
+	} `yaml:"bannedwords"`
+
+	Grammar struct {
+		ChannelID string `yaml:"channelID"`
+	} `yaml:"grammar"`
+
 	Starboard struct {
 		ChannelID string `yaml:"channelID"`
 		Threshold int    `yaml:"threshold"`
@@ -57,7 +66,17 @@ type Config struct {
 // FUNKSJON. Lastar inn konfigurasjonen og gir ein fylt Config-struct
 //--------------------------------------------------------------------------------
 func Load() (*Config, error) {
-	return LoadWithFiles("config.yaml", "secrets.yaml")
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile == "" {
+		configFile = "config.yaml"
+	}
+
+	secretsFile := os.Getenv("SECRETS_FILE")
+	if secretsFile == "" {
+		secretsFile = "secrets.yaml"
+	}
+
+	return LoadWithFiles(configFile, secretsFile)
 }
 
 // LoadWithFiles loads config with custom filenames
