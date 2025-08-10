@@ -6,25 +6,26 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/handlers"
 	"askeladden/internal/bot/services"
 	"askeladden/internal/config"
 	"askeladden/internal/database"
 	"askeladden/internal/reactions"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 func main() {
-// Load configuration using environment variables for file paths
+	// Load configuration using environment variables for file paths
 	configFile := os.Getenv("CONFIG_FILE")
 	if configFile == "" {
-		configFile = "config.yaml"
+		configFile = "config/config.yaml"
 	}
 
 	secretsFile := os.Getenv("SECRETS_FILE")
 	if secretsFile == "" {
-		secretsFile = "secrets.yaml"
+		secretsFile = "config/secrets.yaml"
 	}
 
 	cfg, err := config.LoadWithFiles(configFile, secretsFile)
@@ -43,7 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("[MAIN] Could not create Discord session: %v", err)
 	}
-	
+
 	// Enable necessary intents for message content
 	session.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsMessageContent | discordgo.IntentsGuildMessageReactions
 

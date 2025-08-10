@@ -3,12 +3,12 @@ set -e
 
 # --- CONFIGURATION ---
 SERVER="ellinorlinnea@heim.bitraf.no"
-REMOTE_DIR="/home/ellinorlinnea/askeladden"
+REMOTE_DIR="/home/ellinorlinnea/roersla/askeladden"
 TMUX_SESSION="askeladden"
 REMOTE_LOG_FILE="$REMOTE_DIR/askeladden.log"
 REMOTE_APP_PATH="$REMOTE_DIR/askeladden"
 
-LOCAL_BINARY="askeladden-heim"
+LOCAL_BINARY="askeladden"
 CONFIG_FILE="config.yaml"
 SECRETS_FILE="secrets.yaml"
 
@@ -21,8 +21,8 @@ if [ ! -f "$LOCAL_BINARY" ]; then
 fi
 
 # --- REMOTE PREPARATION ---
-echo "🔎 Checking remote directory..."
-ssh $SERVER "mkdir -p '$REMOTE_DIR'"
+echo "🔎 Erasing remote directory..."
+ssh $SERVER "rm -rf '$REMOTE_DIR'/*"
 
 # --- FILE TRANSFER ---
 echo "📦 Copying files to server..."

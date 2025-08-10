@@ -30,7 +30,7 @@ Askeladden is a Discord bot for Norwegian language communities, with a focus on 
 To build the bot, run the following command. This will create an executable named `askeladden`.
 
 ```bash
-go build -o askeladden
+ go build ./cmd/askeladden
 ```
 
 ### Running

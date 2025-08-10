@@ -2,14 +2,15 @@ package config
 
 import (
 	"os"
+
 	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	Discord struct {
-		Token          string `yaml:"token"`
-		Prefix         string `yaml:"prefix"`
-		LogChannelID   string `yaml:"logChannelID"`
+		Token            string `yaml:"token"`
+		Prefix           string `yaml:"prefix"`
+		LogChannelID     string `yaml:"logChannelID"`
 		DefaultChannelID string `yaml:"defaultChannelID"`
 	} `yaml:"discord"`
 
@@ -42,12 +43,12 @@ type Config struct {
 	} `yaml:"database"`
 
 	Scheduler struct {
-		CronString       string `yaml:"cron_string"`
-		Timezone         string `yaml:"timezone"`
-		MorningTime      string `yaml:"morning_time"`
-		EveningTime      string `yaml:"evening_time"`
-		InactivityHours  int    `yaml:"inactivity_hours"`
-		Enabled          bool   `yaml:"enabled"`
+		CronString      string `yaml:"cron_string"`
+		Timezone        string `yaml:"timezone"`
+		MorningTime     string `yaml:"morning_time"`
+		EveningTime     string `yaml:"evening_time"`
+		InactivityHours int    `yaml:"inactivity_hours"`
+		Enabled         bool   `yaml:"enabled"`
 	} `yaml:"scheduler"`
 
 	// Reaction emojis
@@ -56,24 +57,23 @@ type Config struct {
 	} `yaml:"reactions"`
 
 	// Beta environment settings
-	Environment   string `yaml:"environment"`
-	TableSuffix   string `yaml:"table_suffix"`
+	Environment       string `yaml:"environment"`
+	TableSuffix       string `yaml:"table_suffix"`
 	ShowAISlopWarning bool   `yaml:"showAISlopWarning"`
 	AISlopWarningText string `yaml:"aiSlopWarningText"`
 }
 
-
 // FUNKSJON. Lastar inn konfigurasjonen og gir ein fylt Config-struct
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 func Load() (*Config, error) {
 	configFile := os.Getenv("CONFIG_FILE")
 	if configFile == "" {
-		configFile = "config.yaml"
+		configFile = "config/config.yaml"
 	}
 
 	secretsFile := os.Getenv("SECRETS_FILE")
 	if secretsFile == "" {
-		secretsFile = "secrets.yaml"
+		secretsFile = "config/secrets.yaml"
 	}
 
 	return LoadWithFiles(configFile, secretsFile)
