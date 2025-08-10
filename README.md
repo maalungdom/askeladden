@@ -43,33 +43,16 @@ You can run the bot with different configurations by setting the `CONFIG_FILE` a
 ./askeladden
 ```
 
-**Beta:**
+**Development:**
 
-To run the bot in beta mode, follow these steps:
-
-1. Ensure you are in the `/Users/eg/rørsla/askeladden` directory.
-
-2. Use the following command to build the bot:
-   ```bash
-   go build ./cmd/askeladden
-   ```
-
-3. Run the bot with:
+To run the bot in beta mode, a handy script is provided.
 
 
 ## Production Deployment
 
 Deploying to production on `heim.bitraf.no` is done with a single script. Here's how to do it:
 
-### 1. Build the Linux Binary
-
-First, build the Linux binary from the `cmd/askeladden` directory:
-
-```bash
-GOOS=linux GOARCH=amd64 go build -o askeladden-linux cmd/askeladden/scheduler.go cmd/askeladden/main.go
-```
-
-### 2. Configure Production Settings
+### 1. Configure Production Settings
 
 Make sure you have the following files in the root directory:
 
@@ -84,20 +67,25 @@ Make sure you have the following files in the root directory:
     token: <your_bot_token>
   ```
 
-### 3. Run the Deployment Script
+### 2. Run the Deployment Script
 
-Finally, run the deployment script:
+Run the build and deployment script:
 
 ```bash
-./deploy-production.sh
+./build-and-deploy.sh
 ```
 
 The script will:
+- **Build** the binary for linux
+```bash
+GOOS=linux GOARCH=amd64 go build -o askeladden ./cmd/askeladden
+```
 - **Stop** any existing bot processes on the server
 - **Copy** the binary, config, and secrets files
 - **Start** the bot in a new `tmux` session
 
-### 4. Verify the Deployment
+
+### 3. Verify the Deployment
 
 The script will show you the latest output from the bot. You can also manually check the bot's status with:
 
@@ -110,4 +98,3 @@ ssh ellinorlinnea@heim.bitraf.no 'tmux capture-pane -t askeladden -p'
 ```
 
 To detach from the tmux session, press **Ctrl+B**, then **D**.
-
