@@ -93,7 +93,7 @@ func triggerDailyQuestion(b *bot.Bot) {
 
 	// Send the question to the default channel
 	if b.Config.Discord.DefaultChannelID != "" {
-		services.SendDailyQuestion(b, question, "@everyone")
+		services.SendDailyQuestion(b, question, "@pratsam")
 		log.Printf("[SCHEDULER] Daily question sent: %s", question.Question)
 	} else {
 		log.Println("[SCHEDULER] Default channel not configured.")
