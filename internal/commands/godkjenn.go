@@ -1,21 +1,24 @@
 package commands
+
 import (
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
-	"askeladden/internal/database"
 	"askeladden/internal/bot/services"
+	"askeladden/internal/database"
+
+	"github.com/bwmarrin/discordgo"
 )
+
 func init() {
 	commands["godkjenn"] = Command{
 		name:        "godkjenn",
 		description: "Godkjenn eit spørsmål for hand (kun for opplysarar)",
 		emoji:       "✅",
-		handler:   Godkjenn,
+		handler:     Godkjenn,
 		aliases:     []string{},
 		adminOnly:   true,
 	}
@@ -51,13 +54,13 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 			log.Printf("Failed to get next pending question: %v", err)
 			embed := services.CreateBotEmbed(s, "❌ Feil", "Mislukkast i å hente neste spørsmål.", 0xff0000)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			
+
 			return
 		}
 		if question == nil {
 			embed := services.CreateBotEmbed(s, "🎉 Ingen ventande spørsmål!", "", 0x00ff00)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			
+
 			return
 		}
 	} else {
@@ -66,7 +69,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		if parseErr != nil {
 			embed := services.CreateBotEmbed(s, "❓ Feil", "Ugyldig spørsmål-ID. Bruk eit tal eller «next» for neste ventande spørsmål.", 0xff0000)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			
+
 			return
 		}
 
@@ -76,7 +79,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 			log.Printf("Failed to get pending question by ID %d: %v", questionID, err)
 			embed := services.CreateBotEmbed(s, "❌ Feil", fmt.Sprintf("Kunne ikkje finne ventande spørsmål med ID %d.", questionID), 0xff0000)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			
+
 			return
 		}
 	}
@@ -87,14 +90,13 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		log.Printf("Failed to approve question: %v", err)
 		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved godkjenning av spørsmålet.", 0xff0000)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
-		
+
 		return
 	}
 
 	// Send confirmation
 	confirmationEmbed := services.CreateBotEmbed(s, "✅ Spørsmål godkjent!", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n**Godkjent av:** %s", question.Question, question.AuthorName, m.Author.Username), 0x00ff00)
 	s.ChannelMessageSendEmbed(m.ChannelID, confirmationEmbed)
-	
 
 	// Notify the original user
 	privateChannel, err := s.UserChannelCreate(question.AuthorID)
@@ -111,9 +113,8 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 
 		embed := services.CreateBotEmbed(s, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
 		s.ChannelMessageSendEmbed(privateChannel.ID, embed)
-		
+
 	}
 
 	log.Printf("Question manually approved by %s: %s", m.Author.Username, question.Question)
 }
-
