@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"roersla.no/askeladden/internal/commands"
+	"askeladden/internal/commands"
 )
 
 func main() {

@@ -2,7 +2,7 @@ package reactions
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
+	"askeladden/internal/bot"
 )
 
 // Reaction defines the structure for a reaction handler.

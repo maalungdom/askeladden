@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/bot/services"
+	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 )
 
 // RegisterQuestionReaction registers the question reaction with the configured emoji

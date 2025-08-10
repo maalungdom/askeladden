@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/bot"
-	"roersla.no/askeladden/internal/database"
+	"askeladden/internal/bot"
+	"askeladden/internal/database"
 )
 
 // SendDailyQuestion sends the daily question to the appropriate channel

@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/bwmarrin/discordgo"
-	"roersla.no/askeladden/internal/config"
-	"roersla.no/askeladden/internal/database"
+	"askeladden/internal/config"
+	"askeladden/internal/database"
 )
 
 // Bot represents the main bot structure.
