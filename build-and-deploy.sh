@@ -9,8 +9,8 @@ REMOTE_LOG_FILE="$REMOTE_DIR/askeladden.log"
 REMOTE_APP_PATH="$REMOTE_DIR/askeladden"
 
 LOCAL_BINARY="askeladden"
-CONFIG_FILE="config.yaml"
-SECRETS_FILE="secrets.yaml"
+CONFIG_FILE="config/config.yaml"
+SECRETS_FILE="config/secrets.yaml"
 
 echo "🚀 Deploying Askeladden..."
 
@@ -20,6 +20,10 @@ if [ ! -f "$LOCAL_BINARY" ]; then
     exit 1
 fi
 
+# --- BUILD BINARY ---
+echo "⚒️ Building local binary..."
+GOOS=linux GOARCH=amd64 go build -o askeladden ./cmd/askeladden
+
 # --- REMOTE PREPARATION ---
 echo "🔎 Erasing remote directory..."
 ssh $SERVER "rm -rf '$REMOTE_DIR'/*"
@@ -27,7 +31,7 @@ ssh $SERVER "rm -rf '$REMOTE_DIR'/*"
 # --- FILE TRANSFER ---
 echo "📦 Copying files to server..."
 scp "$LOCAL_BINARY" "$SERVER:$REMOTE_APP_PATH"
-scp "$CONFIG_FILE" "$SECRETS_FILE" "$SERVER:$REMOTE_DIR/"
+scp "$CONFIG_FILE" "$SECRETS_FILE" "$SERVER:$REMOTE_DIR/config/"
 
 # --- STOP OLD PROCESS ---
 echo "🛑 Stopping old bot in tmux (if any)..."
