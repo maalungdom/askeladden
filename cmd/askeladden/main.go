@@ -81,7 +81,7 @@ func main() {
 
 	// Send goodbye message before stopping
 	if askeladden.Config.Discord.LogChannelID != "" {
-		embed := services.CreateBotEmbed(session, "🔴 Offline", "Askeladden is logging off. Goodbye! 👋", 0xff0000)
+		embed := services.CreateBotEmbed(session, "🔴 Offline", "Askeladden is logging off. Goodbye! 👋", services.EmbedTypeError)
 		session.ChannelMessageSendEmbed(askeladden.Config.Discord.LogChannelID, embed)
 	}
 

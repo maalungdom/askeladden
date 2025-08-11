@@ -5,6 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 )
 
 func init() {
@@ -23,7 +24,7 @@ func ClearDatabase(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bo
 	confirmationEmbed := &discordgo.MessageEmbed{
 		Title:       "🗑️ Stadfesting av databasetømming",
 		Description: "Er du sikker på at du vil slette **alle** data frå databasen? Dette kan ikkje angrast.",
-		Color:       0xff0000, // Red color
+		Color:       services.ColorError, // Red color
 	}
 
 	msg, err := s.ChannelMessageSendComplex(m.ChannelID, &discordgo.MessageSend{

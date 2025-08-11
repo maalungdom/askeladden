@@ -27,6 +27,6 @@ func Info(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		"🖥️ Køyrer på %d servarar\n" +
 		"🤖 Bot-brukar: %s#%s", 
 		guildCount, s.State.User.Username, s.State.User.Discriminator)
-	embed := services.CreateBotEmbed(s, "📊 Om Askeladden", infoText, 0x3399ff)
+	embed := services.CreateBotEmbed(s, "📊 Om Askeladden", infoText, services.EmbedTypeInfo)
 	s.ChannelMessageSendEmbed(m.ChannelID, embed)
 }

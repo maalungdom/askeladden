@@ -36,7 +36,7 @@ func New(b *bot.Bot) *Handler {
 func (h *Handler) Ready(s *discordgo.Session, event *discordgo.Ready) {
 	log.Println("[BOT] Askeladden is connected and ready.")
 	if h.Bot.Config.Discord.LogChannelID != "" {
-		embed := services.CreateBotEmbed(s, "🟢 Online", "Askeladden is online and ready! ✨", 0x00ff00)
+		embed := services.CreateBotEmbed(s, "🟢 Online", "Askeladden is online and ready! ✨", services.EmbedTypeSuccess)
 		s.ChannelMessageSendEmbed(h.Bot.Config.Discord.LogChannelID, embed)
 	}
 }
@@ -112,11 +112,11 @@ func (h *Handler) promptForIncorrectWord(s *discordgo.Session, r *discordgo.Mess
 	}
 
 	// Store the original hammered message info in the prompt for later reference
-	promptEmbed := &discordgo.MessageEmbed{
-		Title:       "🚨 Rapporter feil ord",
-		Description: fmt.Sprintf("Ver snill og svar med ord som er feil, skilde med komma viss det er fleire.\n\n[Hopp til opphavleg melding](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID),
-		Color:       0xff0000,
-	}
+	promptEmbed := services.NewEmbedBuilder().
+		SetTitle("🚨 Rapporter feil ord").
+		SetDescription(fmt.Sprintf("Ver snill og svar med ord som er feil, skilde med komma viss det er fleire.\n\n[Hopp til opphavleg melding](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID)).
+		SetColorByType(services.EmbedTypeError).
+		Build()
 
 	s.ChannelMessageSendEmbed(r.ChannelID, promptEmbed)
 }
@@ -276,11 +276,7 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 		confirmText += "\n\nSjå eksisterande diskusjonar i grammatikkforumet for desse orda."
 	}
 	
-	confirmEmbed := &discordgo.MessageEmbed{
-		Title:       "✅ Ord rapporterte",
-		Description: confirmText,
-		Color:       0x00ff00,
-	}
+	confirmEmbed := services.CreateSuccessEmbed("Ord rapporterte", confirmText)
 	
 	s.ChannelMessageSendEmbed(m.ChannelID, confirmEmbed)
 }
@@ -323,43 +319,7 @@ func (h *Handler) checkForBannedWords(s *discordgo.Session, m *discordgo.Message
 
 // sendBannedWordWarning sends a warning about detected banned words
 func (h *Handler) sendBannedWordWarning(s *discordgo.Session, m *discordgo.MessageCreate, bannedWords []string, forumThreads []string) {
-	var warningText string
-	if len(bannedWords) == 1 {
-		warningText = fmt.Sprintf("⚠️ **Grammatisk merknad**\n\nOrdet **\"%s\"** er markert som feilaktig i norsk.", bannedWords[0])
-	} else {
-		warningText = fmt.Sprintf("⚠️ **Grammatisk merknad**\n\nDesse orda er markerte som feilaktige i norsk: **%s**", strings.Join(bannedWords, ", "))
-	}
-
-	// Add forum thread references if available
-	if len(forumThreads) > 0 {
-		// Remove duplicates
-		uniqueThreads := make(map[string]bool)
-		var uniqueThreadList []string
-		for _, threadID := range forumThreads {
-			if !uniqueThreads[threadID] {
-				uniqueThreads[threadID] = true
-				uniqueThreadList = append(uniqueThreadList, threadID)
-			}
-		}
-		
-		if len(uniqueThreadList) == 1 {
-			warningText += fmt.Sprintf("\n\nSjå diskusjon: <#%s>", uniqueThreadList[0])
-		} else if len(uniqueThreadList) > 1 {
-			threadLinks := make([]string, len(uniqueThreadList))
-			for i, threadID := range uniqueThreadList {
-				threadLinks[i] = fmt.Sprintf("<#%s>", threadID)
-			}
-			warningText += fmt.Sprintf("\n\nSjå diskusjonar: %s", strings.Join(threadLinks, ", "))
-		}
-	} else {
-		warningText += "\n\nSjå grammatikkforumet for meir informasjon."
-	}
-
-	warningEmbed := &discordgo.MessageEmbed{
-		Title:       "📝 Språkrettleiing",
-		Description: warningText,
-		Color:       0xffa500, // Orange color
-	}
+	warningEmbed := services.CreateBannedWordWarningEmbed(bannedWords, forumThreads)
 
 	// Send as a reply to the original message
 	reply := &discordgo.MessageSend{

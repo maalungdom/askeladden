@@ -94,7 +94,7 @@ func handleConfigCommand(s *discordgo.Session, m *discordgo.MessageCreate, b *bo
 		configInfo += fmt.Sprintf("\n\n**Scheduler:**\n• Status: ❌ Disabled\n• Fallback Cron: `%s`", cfg.Scheduler.CronString)
 	}
 
-	embed := services.CreateBotEmbed(s, "🔧 Configuration", configInfo, 0x0099ff)
+	embed := services.CreateBotEmbed(s, "🔧 Configuration", configInfo, services.EmbedTypeInfo)
 	_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "Kunne ikkje sende konfigurasjonsinformasjon.")

@@ -36,24 +36,8 @@ func (s *ApprovalService) postToApprovalQueue(session *discordgo.Session, questi
 
 	// Get the author's user info
 	author, err := session.User(question.AuthorID)
-	var authorName, avatarURL string
-	if err == nil {
-		authorName = author.Username
-		avatarURL = author.AvatarURL("")
-	} else {
-		authorName = question.AuthorName // Fallback to stored name
-		avatarURL = ""
-	}
-
-	approvalEmbed := &discordgo.MessageEmbed{
-		Title:       question.Question,
-		Description: "⏳ Opplysar-godkjenning: ventar",
-		Color:       0xff0000, // Red, same as banned words
-		Author: &discordgo.MessageEmbedAuthor{
-			Name:    authorName,
-			IconURL: avatarURL,
-		},
-	}
+	
+	approvalEmbed := CreateApprovalEmbed(question.Question, "⏳ Opplysar-godkjenning: ventar", author)
 
 	approvalMessage, err := session.ChannelMessageSendEmbed(s.Bot.Config.Approval.QueueChannelID, approvalEmbed)
 	if err != nil {
@@ -121,7 +105,7 @@ func (s *ApprovalService) NotifyUserApproval(session *discordgo.Session, questio
 		return
 	}
 
-	embed := CreateBotEmbed(session, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av <@%s>!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverID, question.Question), 0x00ff00)
+	embed := CreateBotEmbed(session, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av <@%s>!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverID, question.Question), EmbedTypeSuccess)
 	_, err = session.ChannelMessageSendEmbed(privateChannel.ID, embed)
 	if err != nil {
 		log.Printf("Failed to send approval notification to user: %v", err)
@@ -148,27 +132,10 @@ func (s *ApprovalService) PostPendingBannedWordToRettingChannel(bannedWordID int
 		return
 	}
 
-	// Create embed with hammer user as author
 	// Get the hammer user info
 	hammerUser, err := s.Bot.Session.User(bannedWord.AuthorID)
-	var authorName, avatarURL string
-	if err == nil {
-		authorName = hammerUser.Username
-		avatarURL = hammerUser.AvatarURL("")
-	} else {
-		authorName = bannedWord.AuthorName
-		avatarURL = ""
-	}
-
-	approvalEmbed := &discordgo.MessageEmbed{
-		Title: bannedWord.Word,
-		Description: "⏳ Opplysar-godkjenning: ventar\n⏳ Rettskrivar-godkjenning: ventar",
-		Color: 0xff0000, // Red
-		Author: &discordgo.MessageEmbedAuthor{
-			Name: authorName,
-			IconURL: avatarURL,
-		},
-	}
+	
+	approvalEmbed := CreateApprovalEmbed(bannedWord.Word, "⏳ Opplysar-godkjenning: ventar\n⏳ Rettskrivar-godkjenning: ventar", hammerUser)
 
 	message, err := s.Bot.Session.ChannelMessageSendEmbed(channelID, approvalEmbed)
 	if err != nil {
@@ -262,30 +229,15 @@ func (s *ApprovalService) PostBannedWordReport(session *discordgo.Session, words
 	}
 
 	// Create discussion embed
-	discussionEmbed := &discordgo.MessageEmbed{
-		Title: "📝 Grammatikkdiskusjon: " + strings.Join(words, ", "),
-		Description: "Dette ordet/desse orda har vorte rapporterte som grammatisk feil.",
-		Color: 0xff6b35, // Orange color
-		Author: &discordgo.MessageEmbedAuthor{
-			Name: "Rapportert av " + reporterName,
-			IconURL: reporterAvatarURL,
-		},
-		Fields: []*discordgo.MessageEmbedField{
-			{
-				Name: "📍 Opphavleg melding",
-				Value: originalInfo,
-				Inline: false,
-			},
-			{
-				Name: "💡 Diskusjonsrettleiing",
-				Value: "• Forklar kvifor ordet er feil\n• Gje korrekte alternativ\n• Del relevante reglar eller kjelder",
-				Inline: false,
-			},
-		},
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: "Ver snill og diskuter på ein konstruktiv måte",
-		},
-	}
+	discussionEmbed := NewEmbedBuilder().
+		SetTitle("📝 Grammatikkdiskusjon: " + strings.Join(words, ", ")).
+		SetDescription("Dette ordet/desse orda har vorte rapporterte som grammatisk feil.").
+		SetColor(0xff6b35). // Orange color
+		SetAuthor("Rapportert av " + reporterName, reporterAvatarURL).
+		AddField("📍 Opphavleg melding", originalInfo, false).
+		AddField("💡 Diskusjonsrettleiing", "• Forklar kvifor ordet er feil\n• Gje korrekte alternativ\n• Del relevante reglar eller kjelder", false).
+		SetFooter("Ver snill og diskuter på ein konstruktiv måte", "").
+		Build()
 
 	// Send the embed to the thread
 	_, err = session.ChannelMessageSendEmbed(thread.ID, discussionEmbed)
@@ -314,7 +266,7 @@ func (s *ApprovalService) NotifyUserRejection(session *discordgo.Session, questi
 		rejectorName = rejector.Username
 	}
 
-	embed := CreateBotEmbed(session, "❌ Spørsmål avvist", fmt.Sprintf("Spørsmålet ditt har blitt avvist av %s.\n\n**\"%s\"**\n\nDu kan prøve å sende inn eit anna spørsmål som passar betre.", rejectorName, question.Question), 0xff0000)
+	embed := CreateBotEmbed(session, "❌ Spørsmål avvist", fmt.Sprintf("Spørsmålet ditt har blitt avvist av %s.\n\n**\"%s\"**\n\nDu kan prøve å sende inn eit anna spørsmål som passar betre.", rejectorName, question.Question), EmbedTypeError)
 	_, err = session.ChannelMessageSendEmbed(privateChannel.ID, embed)
 	if err != nil {
 		log.Printf("Failed to send rejection notification to user: %v", err)

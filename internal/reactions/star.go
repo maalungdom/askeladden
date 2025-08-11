@@ -1,12 +1,11 @@
 package reactions
 
 import (
-	"fmt"
 	"log"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 )
 
 // RegisterStarboardReaction registers the starboard reaction with the configured emoji
@@ -44,28 +43,8 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 	log.Printf("Message %s in channel %s has %d stars (threshold: %d)", r.MessageID, r.ChannelID, stars, b.Config.Starboard.Threshold)
 
 	if stars >= b.Config.Starboard.Threshold {
-		// Send message to starboard channel
-		embed := &discordgo.MessageEmbed{
-			Author: &discordgo.MessageEmbedAuthor{
-				Name:    msg.Author.Username,
-				IconURL: msg.Author.AvatarURL(""),
-			},
-			Description: msg.Content,
-			Footer: &discordgo.MessageEmbedFooter{
-				Text: fmt.Sprintf("%s %d | #%s", b.Config.Starboard.Emoji, stars, getChannelName(s, r.ChannelID)),
-			},
-			Timestamp: string(msg.Timestamp.Format(time.RFC3339)),
-			Color:     0xFFD700, // Gold color
-		}
-
-		// Add original message link
-		embed.Fields = []*discordgo.MessageEmbedField{
-			{
-				Name:   "Opphaveleg melding",
-				Value:  fmt.Sprintf("[Hopp til melding](https://discord.com/channels/%s/%s/%s)", r.GuildID, r.ChannelID, r.MessageID),
-				Inline: false,
-			},
-		}
+		// Send message to starboard channel using new embed system
+		embed := services.CreateStarboardEmbed(msg, stars, getChannelName(s, r.ChannelID), b.Config.Starboard.Emoji, r.GuildID)
 
 		_, err := s.ChannelMessageSendEmbed(b.Config.Starboard.ChannelID, embed)
 		if err != nil {
