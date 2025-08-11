@@ -78,13 +78,13 @@ func handleBannedWordApprovalReaction(s *discordgo.Session, r *discordgo.Message
 			b.Database.UpdateBannedWordForumThreadID(int(bannedWord.ID), thread.ID)
 		}
 
-		embedColor = 0x00ff00 // Green
+		embedColor = services.ColorSuccess // Green
 	embedTitle = bannedWord.Word
 	embedDescription = approvalState.GetApprovalSummary(s)
 		log.Printf("Banned word %s fully approved by combined roles", bannedWord.Word)
 	} else {
 		// Partial approval - update status but don't finalize
-		embedColor = 0xffa500 // Yellow
+		embedColor = services.ColorWarning // Yellow
 	embedTitle = bannedWord.Word
 	embedDescription = approvalState.GetApprovalSummary(s)
 		log.Printf("Banned word %s partially approved - waiting for additional roles", bannedWord.Word)
@@ -172,7 +172,7 @@ func handleQuestionApprovalReaction(s *discordgo.Session, r *discordgo.MessageRe
 	approvedEmbed := &discordgo.MessageEmbed{
 		Title:       question.Question,
 		Description: fmt.Sprintf("🧘‍♀️ Opplysar-godkjenning: %s", approverName),
-		Color:       0x00ff00, // Green
+		Color:       services.ColorSuccess, // Green
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    authorName,
 			IconURL: avatarURL,

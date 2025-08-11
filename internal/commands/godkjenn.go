@@ -30,7 +30,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Parse kommandoen for å hente spørsmål ID eller søkeord
 	parts := strings.SplitN(m.Content, " ", 2)
 	if len(parts) < 2 {
-		embed := services.CreateBotEmbed(s, "❓ Feil", "Bruk: `!godkjenn [spørsmål-ID]` eller `!godkjenn next` for neste ventande spørsmål", 0xff0000)
+		embed := services.CreateBotEmbed(s, "❓ Feil", "Bruk: `!godkjenn [spørsmål-ID]` eller `!godkjenn next` for neste ventande spørsmål", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -39,7 +39,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 
 	if arg == "alle" {
 		// TODO: Implement ApproveAllPendingQuestions functionality
-		embed := services.CreateBotEmbed(s, "⚠️ Ikkje implementert", "Godkjenning av alle spørsmål er ikkje enno implementert.", 0xffa500)
+		embed := services.CreateBotEmbed(s, "⚠️ Ikkje implementert", "Godkjenning av alle spørsmål er ikkje enno implementert.", services.EmbedTypeWarning)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -52,13 +52,13 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		question, err = db.GetPendingQuestion()
 		if err != nil {
 			log.Printf("Failed to get next pending question: %v", err)
-			embed := services.CreateBotEmbed(s, "❌ Feil", "Mislukkast i å hente neste spørsmål.", 0xff0000)
+			embed := services.CreateBotEmbed(s, "❌ Feil", "Mislukkast i å hente neste spørsmål.", services.EmbedTypeError)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
 			return
 		}
 		if question == nil {
-			embed := services.CreateBotEmbed(s, "🎉 Ingen ventande spørsmål!", "", 0x00ff00)
+			embed := services.CreateBotEmbed(s, "🎉 Ingen ventande spørsmål!", "", services.EmbedTypeSuccess)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
 			return
@@ -67,7 +67,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		// Try to parse as question ID
 		questionID, parseErr := strconv.Atoi(arg)
 		if parseErr != nil {
-			embed := services.CreateBotEmbed(s, "❓ Feil", "Ugyldig spørsmål-ID. Bruk eit tal eller «next» for neste ventande spørsmål.", 0xff0000)
+			embed := services.CreateBotEmbed(s, "❓ Feil", "Ugyldig spørsmål-ID. Bruk eit tal eller «next» for neste ventande spørsmål.", services.EmbedTypeError)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
 			return
@@ -77,7 +77,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		question, err = db.GetPendingQuestionByID(questionID)
 		if err != nil {
 			log.Printf("Failed to get pending question by ID %d: %v", questionID, err)
-			embed := services.CreateBotEmbed(s, "❌ Feil", fmt.Sprintf("Kunne ikkje finne ventande spørsmål med ID %d.", questionID), 0xff0000)
+			embed := services.CreateBotEmbed(s, "❌ Feil", fmt.Sprintf("Kunne ikkje finne ventande spørsmål med ID %d.", questionID), services.EmbedTypeError)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
 			return
@@ -88,14 +88,14 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	err = db.ApproveQuestion(question.ID, m.Author.ID)
 	if err != nil {
 		log.Printf("Failed to approve question: %v", err)
-		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved godkjenning av spørsmålet.", 0xff0000)
+		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved godkjenning av spørsmålet.", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 
 		return
 	}
 
 	// Send confirmation
-	confirmationEmbed := services.CreateBotEmbed(s, "✅ Spørsmål godkjent!", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n**Godkjent av:** %s", question.Question, question.AuthorName, m.Author.Username), 0x00ff00)
+	confirmationEmbed := services.CreateBotEmbed(s, "✅ Spørsmål godkjent!", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n**Godkjent av:** %s", question.Question, question.AuthorName, m.Author.Username), services.EmbedTypeSuccess)
 	s.ChannelMessageSendEmbed(m.ChannelID, confirmationEmbed)
 
 	// Notify the original user
@@ -111,7 +111,7 @@ func Godkjenn(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 			approverName = approver.Username
 		}
 
-		embed := services.CreateBotEmbed(s, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), 0x00ff00)
+		embed := services.CreateBotEmbed(s, "🎉 Gratulerer! 🎉", fmt.Sprintf("Spørsmålet ditt er vorte godkjent av %s!\n\n**\"%s\"**\n\nDet er no tilgjengeleg for daglege spørsmål! ✨", approverName, question.Question), services.EmbedTypeSuccess)
 		s.ChannelMessageSendEmbed(privateChannel.ID, embed)
 
 	}

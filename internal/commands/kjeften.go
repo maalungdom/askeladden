@@ -26,7 +26,7 @@ func init() {
 func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Must be used in a guild
 	if m.GuildID == "" {
-		embed := services.CreateBotEmbed(s, "Feil", "Denne kommandoen må brukast i ein server (ikkje PM).", 0xff0000)
+		embed := services.CreateBotEmbed(s, "Feil", "Denne kommandoen må brukast i ein server (ikkje PM).", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -35,7 +35,7 @@ func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	guildRoles, err := s.GuildRoles(m.GuildID)
 	if err != nil {
 		log.Printf("failed to fetch guild roles: %v", err)
-		embed := services.CreateBotEmbed(s, "Feil", "Klarte ikkje hente roller i guilden.", 0xff0000)
+		embed := services.CreateBotEmbed(s, "Feil", "Klarte ikkje hente roller i guilden.", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -51,7 +51,7 @@ func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	}
 
 	if pratsamRoleID == "" {
-		embed := services.CreateBotEmbed(s, "Feil", "Fann ikkje rolla 'pratsam' i guilden.", 0xff0000)
+		embed := services.CreateBotEmbed(s, "Feil", "Fann ikkje rolla 'pratsam' i guilden.", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -62,7 +62,7 @@ func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 		member, err = s.GuildMember(m.GuildID, m.Author.ID)
 		if err != nil {
 			log.Printf("failed to fetch member: %v", err)
-			embed := services.CreateBotEmbed(s, "Feil", "Klarte ikkje hente medlem sin informasjon.", 0xff0000)
+			embed := services.CreateBotEmbed(s, "Feil", "Klarte ikkje hente medlem sin informasjon.", services.EmbedTypeError)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 			return
 		}
@@ -111,7 +111,7 @@ func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 			}
 			if botHighest <= targetRole.Position {
 				msg := fmt.Sprintf("Botens rolle er ikkje høg nok til å endre rolla '%s'. Flytt boten sin rolle over '%s' i serverinnstillingane.", targetRole.Name, targetRole.Name)
-				embed := services.CreateBotEmbed(s, "Feil", msg, 0xff0000)
+				embed := services.CreateBotEmbed(s, "Feil", msg, services.EmbedTypeError)
 				s.ChannelMessageSendEmbed(m.ChannelID, embed)
 				return
 			}
@@ -122,11 +122,11 @@ func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	if hasRole {
 		if err := s.GuildMemberRoleRemove(m.GuildID, m.Author.ID, pratsamRoleID); err != nil {
 			log.Printf("failed to remove role: %v", err)
-			embed := services.CreateBotEmbed(s, "Feil", fmt.Sprintf("Klarte ikkje fjerne rolla 'pratsam': %v", err), 0xff0000)
+			embed := services.CreateBotEmbed(s, "Feil", fmt.Sprintf("Klarte ikkje fjerne rolla 'pratsam': %v", err), services.EmbedTypeError)
 			s.ChannelMessageSendEmbed(m.ChannelID, embed)
 			return
 		}
-		embed := services.CreateBotEmbed(s, "Orsak! 🤐", "Eg visste ikkje at du ikkje var ein pratsam type. Eg skal lata vere å plaga deg.", 0x00ff00)
+		embed := services.CreateBotEmbed(s, "Orsak! 🤐", "Eg visste ikkje at du ikkje var ein pratsam type. Eg skal lata vere å plaga deg.", services.EmbedTypeSuccess)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		log.Printf("Removed role 'pratsam' from %s (%s)", m.Author.Username, m.Author.ID)
 		return
@@ -135,12 +135,12 @@ func Kjeften(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Add role
 	if err := s.GuildMemberRoleAdd(m.GuildID, m.Author.ID, pratsamRoleID); err != nil {
 		log.Printf("failed to add role: %v", err)
-		embed := services.CreateBotEmbed(s, "Feil", fmt.Sprintf("Klarte ikkje legge til rolla 'pratsam': %v", err), 0xff0000)
+		embed := services.CreateBotEmbed(s, "Feil", fmt.Sprintf("Klarte ikkje legge til rolla 'pratsam': %v", err), services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
 
-	embed := services.CreateBotEmbed(s, "Hei du! 📢", "Eg trur vi kjem til å vere gode venar!", 0x00ff00)
+	embed := services.CreateBotEmbed(s, "Hei du! 📢", "Eg trur vi kjem til å vere gode venar!", services.EmbedTypeSuccess)
 	s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	log.Printf("Added role 'pratsam' to %s (%s)", m.Author.Username, m.Author.ID)
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 )
 
 // Command defines the structure for a command
@@ -103,7 +104,7 @@ func ListCommands(isAdmin bool) *discordgo.MessageEmbed {
 
 	embed := &discordgo.MessageEmbed{
 		Title: "Askeladden - Kommandoer",
-		Color: 0x0099ff, // Blue color
+		Color: services.ColorInfo, // Blue color
 		Fields: []*discordgo.MessageEmbedField{
 			{
 				Name:  "Generelle kommandoer",

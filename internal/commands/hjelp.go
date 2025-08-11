@@ -44,11 +44,10 @@ func Hjelp(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	}
 
 	helpEmbed := ListCommands(isAdmin)
-	helpBotEmbed := services.CreateBotEmbed(s, helpEmbed.Title, helpEmbed.Description, 0x7289da)
+	helpBotEmbed := services.CreateBotEmbed(s, helpEmbed.Title, helpEmbed.Description, services.EmbedTypePrimary)
 	helpBotEmbed.Fields = helpEmbed.Fields
 	if helpEmbed.Footer != nil {
 		helpBotEmbed.Footer = helpEmbed.Footer
 	}
-	helpBotEmbed.Color = 0x7289da
 	s.ChannelMessageSendEmbed(m.ChannelID, helpBotEmbed)
 }
