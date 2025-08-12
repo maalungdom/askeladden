@@ -47,6 +47,18 @@ You can run the bot with different configurations by setting the `CONFIG_FILE` a
 
 To run the bot in beta mode, a handy script is provided.
 
+## Documentation
+
+### Discord Embed Guidelines
+
+For standardized Discord embed creation and consistent styling, see the [Discord Embed Guidelines](docs/EMBEDS.md).
+
+The embed system provides:
+- Consistent colors and styling across all bot interactions
+- Fluent builder interface for complex embeds
+- Helper functions for common embed patterns
+- Reduced code duplication and improved maintainability
+
 
 ## Production Deployment
 

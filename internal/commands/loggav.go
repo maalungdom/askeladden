@@ -1,11 +1,10 @@
-
 package commands
 
 import (
 	"os"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -23,4 +22,3 @@ func Loggav(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	bot.Stop()
 	os.Exit(0)
 }
-

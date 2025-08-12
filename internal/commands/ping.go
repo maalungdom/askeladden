@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -19,6 +19,6 @@ func init() {
 //--------------------------------------------------------------------------------
 
 func Ping(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
-	embed := services.CreateBotEmbed(s, "Pong! 🏓", "Bot er oppe og svarar.", 0x00ff00)
+	embed := services.CreateBotEmbed(s, "Pong! 🏓", "Bot er oppe og svarar.", services.EmbedTypeSuccess)
 	s.ChannelMessageSendEmbed(m.ChannelID, embed)
 }

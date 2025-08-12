@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 // handleRejectReaction is registered dynamically in InitializeReactions
@@ -33,6 +33,6 @@ func handleRejectReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd,
 	approvalService.NotifyUserRejection(s, question, r.UserID)
 
 	// Update the approval message to indicate it's been processed
-	rejectedEmbed := services.CreateBotEmbed(s, "❌ AVVIST", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n**Avvist av:** <@%s>", question.Question, question.AuthorName, r.UserID), 0xff0000)
+	rejectedEmbed := services.CreateBotEmbed(s, "❌ AVVIST", fmt.Sprintf("**Spørsmål:** %s\n**Frå:** %s\n**Avvist av:** <@%s>", question.Question, question.AuthorName, r.UserID), services.EmbedTypeError)
 	s.ChannelMessageEditEmbed(r.ChannelID, r.MessageID, rejectedEmbed)
 }

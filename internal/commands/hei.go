@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -19,6 +19,6 @@ func init() {
 // Hei handsamer hei-kommandoen
 
 func Hei(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
-	embed := services.CreateBotEmbed(s, "Heisann! 👋", "Eg er Askeladden, laga av rørsla!", 0x0099ff)
+	embed := services.CreateBotEmbed(s, "Heisann! 👋", "Eg er Askeladden, laga av rørsla!", services.EmbedTypeInfo)
 	s.ChannelMessageSendEmbed(m.ChannelID, embed)
 }

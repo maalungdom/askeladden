@@ -1,11 +1,11 @@
 package main
 
 import (
+	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 	"fmt"
 	"log"
 	"time"
-	"askeladden/internal/bot"
-	"askeladden/internal/bot/services"
 )
 
 type SchedulerState struct {
@@ -93,7 +93,27 @@ func triggerDailyQuestion(b *bot.Bot) {
 
 	// Send the question to the default channel
 	if b.Config.Discord.DefaultChannelID != "" {
-		services.SendDailyQuestion(b, question, "@pratsam")
+		// Get guild ID from the channel
+		channel, err := b.Session.Channel(b.Config.Discord.DefaultChannelID)
+		if err != nil {
+			log.Printf("[SCHEDULER] Failed to get channel info: %v", err)
+			return
+		}
+
+		// Get pratsam role ID
+		roleID, err := services.GetPratsamRoleID(b, channel.GuildID)
+		if err != nil {
+			log.Printf("[SCHEDULER] Failed to get pratsam role ID: %v", err)
+			return
+		}
+
+		// Format role mention if role exists
+		mention := ""
+		if roleID != "" {
+			mention = "<@&" + roleID + ">"
+		}
+
+		services.SendDailyQuestion(b, question, mention)
 		log.Printf("[SCHEDULER] Daily question sent: %s", question.Question)
 	} else {
 		log.Println("[SCHEDULER] Default channel not configured.")
@@ -136,7 +156,7 @@ func checkAndTriggerDailyQuestion(b *bot.Bot, state *SchedulerState) {
 			reason = fmt.Sprintf("inactivity threshold (%v since last activity, before nighttime)", timeSinceLastActivity.Round(time.Minute))
 		} else if currentTime.After(eveningTime) {
 			// After nighttime - log but don't trigger
-			log.Printf("[SCHEDULER] Inactivity threshold reached (%v) but nighttime reached (%s) - waiting until tomorrow morning", 
+			log.Printf("[SCHEDULER] Inactivity threshold reached (%v) but nighttime reached (%s) - waiting until tomorrow morning",
 				timeSinceLastActivity.Round(time.Minute), b.Config.Scheduler.EveningTime)
 		}
 	}
@@ -145,7 +165,7 @@ func checkAndTriggerDailyQuestion(b *bot.Bot, state *SchedulerState) {
 		log.Printf("[SCHEDULER] Triggering daily question due to: %s", reason)
 		triggerDailyQuestion(b)
 		state.lastDailyPost = now
-		
+
 		// Reset activity timer when we post
 		state.lastActivity = now
 	}

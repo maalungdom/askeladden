@@ -14,4 +14,3 @@ func (db *DB) ApproveAllPendingQuestions(approverID string) error {
 	log.Printf("Successfully approved ALL pending questions!")
 	return nil
 }
-

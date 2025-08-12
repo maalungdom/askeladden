@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 		name:        "poke",
 		description: "Utløys dagens spørsmål for hand (kun admin)",
 		emoji:       "👉",
-		handler:   handlePoke,
+		handler:     handlePoke,
 		adminOnly:   true,
 	}
 }
@@ -34,14 +34,14 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) 
 	question, err := db.GetLeastAskedApprovedQuestion()
 	if err != nil {
 		log.Printf("Failed to get least asked question: %v", err)
-		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved henting av spørsmål frå databasen.", 0xff0000)
+		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved henting av spørsmål frå databasen.", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
 
 	if question == nil {
 		log.Println("No approved questions available")
-		embed := services.CreateBotEmbed(s, "😔 Ingen godkjente spørsmål", "Ingen godkjente spørsmål tilgjengelege for augneblinken.", 0xffff00)
+		embed := services.CreateBotEmbed(s, "😔 Ingen godkjente spørsmål", "Ingen godkjente spørsmål tilgjengelege for augneblinken.", services.EmbedTypeWarning)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -50,7 +50,7 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) 
 	err = db.IncrementQuestionUsage(question.ID)
 	if err != nil {
 		log.Printf("Failed to increment question usage: %v", err)
-		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved oppdatering av spørsmål-statistikk.", 0xff0000)
+		embed := services.CreateBotEmbed(s, "❌ Feil", "Feil ved oppdatering av spørsmål-statistikk.", services.EmbedTypeError)
 		s.ChannelMessageSendEmbed(m.ChannelID, embed)
 		return
 	}
@@ -66,15 +66,15 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) 
 	services.SendDailyQuestion(bot, question, mention)
 
 	log.Printf("Daily question manually triggered: %s (asked %d times total)", question.Question, question.TimesAsked+1)
-	
+
 	// Get stats for confirmation message
 	totalApproved, totalAsked, minAsked, err := db.GetApprovedQuestionStats()
 	if err != nil {
 		log.Printf("[DATABASE] Failed to get question stats: %v", err)
 	} else {
-			statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`, 
-				totalApproved, totalAsked+1, minAsked)
-			embed := services.CreateBotEmbed(s, "📊 Statistikk", statsMessage, 0x3399ff)
-			s.ChannelMessageSendEmbed(bot.Config.Discord.LogChannelID, embed)
-		}
+		statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`,
+			totalApproved, totalAsked+1, minAsked)
+		embed := services.CreateBotEmbed(s, "📊 Statistikk", statsMessage, services.EmbedTypeInfo)
+		s.ChannelMessageSendEmbed(bot.Config.Discord.LogChannelID, embed)
+	}
 }
