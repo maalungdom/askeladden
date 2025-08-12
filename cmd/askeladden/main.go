@@ -63,6 +63,7 @@ func main() {
 	session.AddHandler(botHandlers.Ready)
 	session.AddHandler(botHandlers.MessageCreate)
 	session.AddHandler(botHandlers.ReactionAdd)
+	session.AddHandler(botHandlers.ReactionRemove)
 	session.AddHandler(botHandlers.InteractionCreate)
 
 	// Start bot

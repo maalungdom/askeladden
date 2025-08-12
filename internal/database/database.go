@@ -44,6 +44,7 @@ type DatabaseIface interface {
 	AddStarboardMessage(originalMessageID, starboardMessageID, channelID string) error
 	GetStarboardMessage(originalMessageID string) (string, error)
 	UpdateStarboardMessage(originalMessageID, starboardMessageID string) error
+	RemoveStarboardMessage(originalMessageID string) error
 	Close() error
 	ClearDatabase() error
 }
@@ -877,6 +878,19 @@ func (db *DB) UpdateStarboardMessage(originalMessageID, starboardMessageID strin
 		return err
 	}
 	log.Printf("Successfully updated starboard message mapping")
+	return nil
+}
+
+// RemoveStarboardMessage removes a starboard message mapping from the database
+func (db *DB) RemoveStarboardMessage(originalMessageID string) error {
+	log.Printf("Removing starboard message mapping for original message: %s", originalMessageID)
+	query := fmt.Sprintf("DELETE FROM %s WHERE original_message_id = ?", db.starboardTable)
+	_, err := db.conn.Exec(query, originalMessageID)
+	if err != nil {
+		log.Printf("Failed to remove starboard message mapping: %v", err)
+		return err
+	}
+	log.Printf("Successfully removed starboard message mapping")
 	return nil
 }
 
