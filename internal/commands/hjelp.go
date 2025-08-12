@@ -1,12 +1,11 @@
-
 package commands
 
 import (
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -14,18 +13,18 @@ func init() {
 		name:        "hjelp",
 		description: "Syn denne hjelpemeldinga",
 		emoji:       "❓",
-		handler:   Hjelp,
+		handler:     Hjelp,
 		aliases:     []string{"help", "h"},
 	}
 }
 
 // Hjelp handsamer hjelp-kommandoen
-//--------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 func Hjelp(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Check if user has admin role (we need to implement role checking here)
 	// For now, let's use a placeholder implementation
 	isAdmin := false
-	
+
 	// Try to get guild member to check roles
 	if m.GuildID != "" {
 		member, err := s.GuildMember(m.GuildID, m.Author.ID)

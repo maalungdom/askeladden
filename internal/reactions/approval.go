@@ -1,4 +1,3 @@
-
 package reactions
 
 import (
@@ -6,12 +5,13 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
 	"askeladden/internal/database"
 	"askeladden/internal/permissions"
+	"github.com/bwmarrin/discordgo"
 )
+
 // handleBannedWordApprovalReaction handles reactions for banned word approval process.
 func handleBannedWordApprovalReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
 	bannedWord, err := b.Database.GetBannedWordByApprovalMessageID(r.MessageID)
@@ -79,14 +79,14 @@ func handleBannedWordApprovalReaction(s *discordgo.Session, r *discordgo.Message
 		}
 
 		embedColor = services.ColorSuccess // Green
-	embedTitle = bannedWord.Word
-	embedDescription = approvalState.GetApprovalSummary(s)
+		embedTitle = bannedWord.Word
+		embedDescription = approvalState.GetApprovalSummary(s)
 		log.Printf("Banned word %s fully approved by combined roles", bannedWord.Word)
 	} else {
 		// Partial approval - update status but don't finalize
 		embedColor = services.ColorWarning // Yellow
-	embedTitle = bannedWord.Word
-	embedDescription = approvalState.GetApprovalSummary(s)
+		embedTitle = bannedWord.Word
+		embedDescription = approvalState.GetApprovalSummary(s)
 		log.Printf("Banned word %s partially approved - waiting for additional roles", bannedWord.Word)
 	}
 
@@ -103,11 +103,11 @@ func handleBannedWordApprovalReaction(s *discordgo.Session, r *discordgo.Message
 
 	// Create updated embed with hammer user as author
 	updatedEmbed := &discordgo.MessageEmbed{
-		Title: embedTitle,
+		Title:       embedTitle,
 		Description: embedDescription,
-		Color: embedColor,
+		Color:       embedColor,
 		Author: &discordgo.MessageEmbedAuthor{
-			Name: authorName,
+			Name:    authorName,
 			IconURL: avatarURL,
 		},
 	}
@@ -156,7 +156,7 @@ func handleQuestionApprovalReaction(s *discordgo.Session, r *discordgo.MessageRe
 	} else {
 		approverName = "Ukjend"
 	}
-	
+
 	// Get the question author's info for embed author
 	questionAuthor, err := s.User(question.AuthorID)
 	var authorName, avatarURL string
@@ -180,4 +180,3 @@ func handleQuestionApprovalReaction(s *discordgo.Session, r *discordgo.MessageRe
 	}
 	s.ChannelMessageEditEmbed(r.ChannelID, r.MessageID, approvedEmbed)
 }
-

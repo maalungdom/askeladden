@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 // handleRejectReaction is registered dynamically in InitializeReactions

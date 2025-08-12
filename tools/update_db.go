@@ -16,11 +16,11 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", 
-		cfg.Database.User, 
-		cfg.Database.Password, 
-		cfg.Database.Host, 
-		cfg.Database.Port, 
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+		cfg.Database.User,
+		cfg.Database.Password,
+		cfg.Database.Host,
+		cfg.Database.Port,
 		cfg.Database.DBName)
 
 	db, err := sql.Open("mysql", dsn)

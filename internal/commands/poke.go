@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -15,7 +15,7 @@ func init() {
 		name:        "poke",
 		description: "Utløys dagens spørsmål for hand (kun admin)",
 		emoji:       "👉",
-		handler:   handlePoke,
+		handler:     handlePoke,
 		adminOnly:   true,
 	}
 }
@@ -66,15 +66,15 @@ func handlePoke(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) 
 	services.SendDailyQuestion(bot, question, mention)
 
 	log.Printf("Daily question manually triggered: %s (asked %d times total)", question.Question, question.TimesAsked+1)
-	
+
 	// Get stats for confirmation message
 	totalApproved, totalAsked, minAsked, err := db.GetApprovedQuestionStats()
 	if err != nil {
 		log.Printf("[DATABASE] Failed to get question stats: %v", err)
 	} else {
-			statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`, 
-				totalApproved, totalAsked+1, minAsked)
-			embed := services.CreateBotEmbed(s, "📊 Statistikk", statsMessage, services.EmbedTypeInfo)
-			s.ChannelMessageSendEmbed(bot.Config.Discord.LogChannelID, embed)
-		}
+		statsMessage := fmt.Sprintf(`📊 **Statistikk**: %d godkjente spørsmål, %d gonger stilt totalt, minst stilt: %d gonger`,
+			totalApproved, totalAsked+1, minAsked)
+		embed := services.CreateBotEmbed(s, "📊 Statistikk", statsMessage, services.EmbedTypeInfo)
+		s.ChannelMessageSendEmbed(bot.Config.Discord.LogChannelID, embed)
+	}
 }

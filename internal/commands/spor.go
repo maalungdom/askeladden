@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {
@@ -26,16 +26,16 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	// Parse kommandoen for å hente spørsmålet
 	parts := strings.SplitN(m.Content, " ", 2)
 	if len(parts) < 2 {
-			embed := services.CreateBotEmbed(s, "❓ Feil", "Du må skrive eit spørsmål! Døme: `!spør Kva er din yndlingsmat?`", services.EmbedTypeError)
-			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			return
+		embed := services.CreateBotEmbed(s, "❓ Feil", "Du må skrive eit spørsmål! Døme: `!spør Kva er din yndlingsmat?`", services.EmbedTypeError)
+		s.ChannelMessageSendEmbed(m.ChannelID, embed)
+		return
 	}
 
 	question := strings.TrimSpace(parts[1])
 	if question == "" {
-			embed := services.CreateBotEmbed(s, "❓ Feil", "Spørsmålet kan ikkje vere tomt!", services.EmbedTypeError)
-			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			return
+		embed := services.CreateBotEmbed(s, "❓ Feil", "Spørsmålet kan ikkje vere tomt!", services.EmbedTypeError)
+		s.ChannelMessageSendEmbed(m.ChannelID, embed)
+		return
 	}
 
 	// Send bekreftelse til brukaren
@@ -50,15 +50,15 @@ func Spor(s *discordgo.Session, m *discordgo.MessageCreate, bot *bot.Bot) {
 	questionID, err := db.AddQuestion(question, m.Author.ID, m.Author.Username, response.ID, m.ChannelID)
 	if err != nil {
 		log.Printf("Feil ved lagring av spørsmål: %v", err)
-			embed := services.CreateBotEmbed(s, "❌ Feil", "Det oppstod ein feil ved lagring av spørsmålet.", services.EmbedTypeError)
-			s.ChannelMessageSendEmbed(m.ChannelID, embed)
-			return
+		embed := services.CreateBotEmbed(s, "❌ Feil", "Det oppstod ein feil ved lagring av spørsmålet.", services.EmbedTypeError)
+		s.ChannelMessageSendEmbed(m.ChannelID, embed)
+		return
 	}
 
 	// Send DM bekreftelse til brukaren
 	privateChannel, err := s.UserChannelCreate(m.Author.ID)
 	if err == nil {
-	embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Hei %s! 👋\n\nSpørsmålet ditt er vorte sendt til godkjenning:\n\n**\"%s\"**\n\nDu får bod når det vert godkjent av opplysarane våre! 📝✨", m.Author.Username, question), services.EmbedTypeInfo)
+		embed := services.CreateBotEmbed(s, "📝 Spørsmål motteke!", fmt.Sprintf("Hei %s! 👋\n\nSpørsmålet ditt er vorte sendt til godkjenning:\n\n**\"%s\"**\n\nDu får bod når det vert godkjent av opplysarane våre! 📝✨", m.Author.Username, question), services.EmbedTypeInfo)
 		s.ChannelMessageSendEmbed(privateChannel.ID, embed)
 	}
 

@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Command defines the structure for a command
@@ -28,12 +28,12 @@ func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.Message
 	// `input` is the command with prefix, e.g., "?spør"
 	// Remove prefix to get the actual command
 	commandWithoutPrefix := strings.TrimPrefix(input, bot.Config.Discord.Prefix)
-	
+
 	log.Printf("[DEBUG] MatchAndRunCommand: input='%s', prefix='%s', command='%s'", input, bot.Config.Discord.Prefix, commandWithoutPrefix)
-	
+
 	// Debug: list all registered commands
 	log.Printf("[DEBUG] Registered commands: %v", getCommandNames())
-	
+
 	// Try to find command by name without prefix
 	if cmd, exists := commands[commandWithoutPrefix]; exists {
 		log.Printf("[DEBUG] Found command '%s', executing", commandWithoutPrefix)
@@ -52,7 +52,7 @@ func MatchAndRunCommand(input string, s *discordgo.Session, m *discordgo.Message
 			}
 		}
 	}
-	
+
 	log.Printf("[DEBUG] No command or alias found for '%s'", commandWithoutPrefix)
 }
 
@@ -70,7 +70,7 @@ func IsAdminCommand(commandName string) bool {
 	// Remove prefix from command name for lookup
 	commandWithoutPrefix := strings.TrimPrefix(commandName, "!")
 	commandWithoutPrefix = strings.TrimPrefix(commandWithoutPrefix, "?")
-	
+
 	if cmd, exists := commands[commandWithoutPrefix]; exists {
 		return cmd.adminOnly
 	}

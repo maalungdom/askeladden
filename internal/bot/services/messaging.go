@@ -3,9 +3,9 @@ package services
 import (
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/database"
+	"github.com/bwmarrin/discordgo"
 )
 
 // SendDailyQuestion sends the daily question to the appropriate channel
@@ -39,4 +39,3 @@ func SendDailyQuestion(bot *bot.Bot, question *database.Question, mention string
 		log.Printf("[MESSAGING] Failed to send daily question: %v", err)
 	}
 }
-

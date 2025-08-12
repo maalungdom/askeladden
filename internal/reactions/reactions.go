@@ -1,8 +1,8 @@
 package reactions
 
 import (
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Reaction defines the structure for a reaction handler.
@@ -55,14 +55,13 @@ func IsAdminReaction(emoji string) bool {
 func InitializeReactions(b *bot.Bot) {
 	// Register starboard reaction
 	RegisterStarboardReaction(b)
-	
+
 	// Register question reaction
 	RegisterQuestionReaction(b)
-	
+
 	// Register approval reaction (static emoji)
 	Register("👍", "Godkjenn eit spørsmål.", handleApprovalReaction).SetAdminOnly()
-	
-	// Register reject reaction (static emoji) 
+
+	// Register reject reaction (static emoji)
 	Register("👎", "Avvis eit spørsmål.", handleRejectReaction).SetAdminOnly()
 }
-

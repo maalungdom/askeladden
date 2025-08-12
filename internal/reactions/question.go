@@ -3,9 +3,9 @@ package reactions
 import (
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 // RegisterQuestionReaction registers the question reaction with the configured emoji
@@ -39,4 +39,3 @@ func handleQuestionReaction(s *discordgo.Session, r *discordgo.MessageReactionAd
 	// React with a success emoji
 	s.MessageReactionAdd(r.ChannelID, r.MessageID, "✅")
 }
-
