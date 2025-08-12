@@ -40,6 +40,10 @@ type DatabaseIface interface {
 	RemoveBannedWord(word string) error
 	IsBannedWord(word string) (bool, *BannedWord, error)
 	GetBannedWords() ([]*BannedWord, error)
+	// Starboard methods
+	AddStarboardMessage(originalMessageID, starboardMessageID, channelID string) error
+	GetStarboardMessage(originalMessageID string) (string, error)
+	UpdateStarboardMessage(originalMessageID, starboardMessageID string) error
 	Close() error
 	ClearDatabase() error
 }
@@ -51,6 +55,7 @@ type DB struct {
 	conn              *sql.DB
 	tableName         string // Dynamic table name (daily_questions or daily_questions_testing)
 	bannedWordsTable  string // banned_bokmal_words or banned_bokmal_words_testing
+	starboardTable    string // starboard_messages or starboard_messages_testing
 }
 
 // New creates a new database connection
@@ -75,17 +80,20 @@ func New(cfg *config.Config) (*DB, error) {
 	// Determine table names based on config
 	tableName := "daily_questions"
 	bannedWordsTable := "banned_bokmal_words"
+	starboardTable := "starboard_messages"
 	
 	if cfg.TableSuffix != "" {
 		tableName += cfg.TableSuffix
 		bannedWordsTable += cfg.TableSuffix
-		log.Printf("Using beta table names: %s, %s", tableName, bannedWordsTable)
+		starboardTable += cfg.TableSuffix
+		log.Printf("Using beta table names: %s, %s, %s", tableName, bannedWordsTable, starboardTable)
 	}
 	
 	db := &DB{
 		conn:              conn,
 		tableName:         tableName,
 		bannedWordsTable: bannedWordsTable,
+		starboardTable:   starboardTable,
 	}
 	
 	// Create tables if they don't exist
@@ -151,6 +159,20 @@ func (db *DB) createTables() error {
 	log.Printf("Creating table if not exists: %s", db.tableName)
 	if _, err := db.conn.Exec(questionsQuery); err != nil {
 		return fmt.Errorf("failed to create %s table: %w", db.tableName, err)
+	}
+
+	// Create starboard messages table
+	starboardQuery := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		original_message_id VARCHAR(255) NOT NULL UNIQUE,
+		starboard_message_id VARCHAR(255) NOT NULL,
+		channel_id VARCHAR(255) NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`, db.starboardTable)
+
+	log.Printf("Creating table if not exists: %s", db.starboardTable)
+	if _, err := db.conn.Exec(starboardQuery); err != nil {
+		return fmt.Errorf("failed to create %s table: %w", db.starboardTable, err)
 	}
 
 	return nil
@@ -253,6 +275,15 @@ type BannedWord struct {
 	RettskrivarApprovedAt *time.Time
 	CreatedAt             time.Time
 	OriginalMessageID     *string
+}
+
+// StarboardMessage represents a starboard message mapping from the database
+type StarboardMessage struct {
+	ID                 int
+	OriginalMessageID  string
+	StarboardMessageID string
+	ChannelID          string
+	CreatedAt          time.Time
 }
 
 // AddQuestion adds a new question to the database
@@ -807,6 +838,46 @@ func (db *DB) GetBannedWords() ([]*BannedWord, error) {
 		words = append(words, &bw)
 	}
 	return words, nil
+}
+
+// AddStarboardMessage adds a new starboard message mapping to the database
+func (db *DB) AddStarboardMessage(originalMessageID, starboardMessageID, channelID string) error {
+	log.Printf("Adding starboard message mapping: %s -> %s", originalMessageID, starboardMessageID)
+	query := fmt.Sprintf("INSERT INTO %s (original_message_id, starboard_message_id, channel_id) VALUES (?, ?, ?)", db.starboardTable)
+	_, err := db.conn.Exec(query, originalMessageID, starboardMessageID, channelID)
+	if err != nil {
+		log.Printf("Failed to add starboard message mapping: %v", err)
+		return err
+	}
+	log.Printf("Successfully added starboard message mapping")
+	return nil
+}
+
+// GetStarboardMessage gets the starboard message ID for an original message
+func (db *DB) GetStarboardMessage(originalMessageID string) (string, error) {
+	query := fmt.Sprintf("SELECT starboard_message_id FROM %s WHERE original_message_id = ?", db.starboardTable)
+	var starboardMessageID string
+	err := db.conn.QueryRow(query, originalMessageID).Scan(&starboardMessageID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil // No starboard message exists yet
+		}
+		return "", err
+	}
+	return starboardMessageID, nil
+}
+
+// UpdateStarboardMessage updates the starboard message ID for an original message
+func (db *DB) UpdateStarboardMessage(originalMessageID, starboardMessageID string) error {
+	log.Printf("Updating starboard message mapping: %s -> %s", originalMessageID, starboardMessageID)
+	query := fmt.Sprintf("UPDATE %s SET starboard_message_id = ? WHERE original_message_id = ?", db.starboardTable)
+	_, err := db.conn.Exec(query, starboardMessageID, originalMessageID)
+	if err != nil {
+		log.Printf("Failed to update starboard message mapping: %v", err)
+		return err
+	}
+	log.Printf("Successfully updated starboard message mapping")
+	return nil
 }
 
 // ClearDatabase drops all tables from the database

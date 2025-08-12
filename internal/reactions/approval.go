@@ -79,14 +79,14 @@ func handleBannedWordApprovalReaction(s *discordgo.Session, r *discordgo.Message
 		}
 
 		embedColor = services.ColorSuccess // Green
-	embedTitle = bannedWord.Word
-	embedDescription = approvalState.GetApprovalSummary(s)
+		embedTitle = bannedWord.Word
+		embedDescription = approvalState.GetApprovalSummary(s)
 		log.Printf("Banned word %s fully approved by combined roles", bannedWord.Word)
 	} else {
 		// Partial approval - update status but don't finalize
 		embedColor = services.ColorWarning // Yellow
-	embedTitle = bannedWord.Word
-	embedDescription = approvalState.GetApprovalSummary(s)
+		embedTitle = bannedWord.Word
+		embedDescription = approvalState.GetApprovalSummary(s)
 		log.Printf("Banned word %s partially approved - waiting for additional roles", bannedWord.Word)
 	}
 

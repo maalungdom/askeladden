@@ -43,12 +43,37 @@ func handleStarReaction(s *discordgo.Session, r *discordgo.MessageReactionAdd, b
 	log.Printf("Message %s in channel %s has %d stars (threshold: %d)", r.MessageID, r.ChannelID, stars, b.Config.Starboard.Threshold)
 
 	if stars >= b.Config.Starboard.Threshold {
-		// Send message to starboard channel using new embed system
+		// Check if a starboard message already exists for this original message
+		existingStarboardMessageID, err := b.Database.GetStarboardMessage(r.MessageID)
+		if err != nil {
+			log.Printf("Error checking for existing starboard message: %v", err)
+			return
+		}
+
+		// Create updated embed
 		embed := services.CreateStarboardEmbed(msg, stars, getChannelName(s, r.ChannelID), b.Config.Starboard.Emoji, r.GuildID)
 
-		_, err := s.ChannelMessageSendEmbed(b.Config.Starboard.ChannelID, embed)
-		if err != nil {
-			log.Printf("Error sending starboard message: %v", err)
+		if existingStarboardMessageID != "" {
+			// Update existing starboard message
+			log.Printf("Updating existing starboard message %s with %d stars", existingStarboardMessageID, stars)
+			_, err := s.ChannelMessageEditEmbed(b.Config.Starboard.ChannelID, existingStarboardMessageID, embed)
+			if err != nil {
+				log.Printf("Error updating starboard message: %v", err)
+			}
+		} else {
+			// Create new starboard message
+			log.Printf("Creating new starboard message for original message %s with %d stars", r.MessageID, stars)
+			starboardMsg, err := s.ChannelMessageSendEmbed(b.Config.Starboard.ChannelID, embed)
+			if err != nil {
+				log.Printf("Error sending starboard message: %v", err)
+				return
+			}
+
+			// Record the mapping in the database
+			err = b.Database.AddStarboardMessage(r.MessageID, starboardMsg.ID, r.ChannelID)
+			if err != nil {
+				log.Printf("Error recording starboard message mapping: %v", err)
+			}
 		}
 	}
 }
