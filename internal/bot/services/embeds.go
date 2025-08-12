@@ -1,21 +1,20 @@
-
 package services
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/database"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Embed color constants for consistent styling
 const (
-	ColorSuccess  = 0x00ff00 // Green
-	ColorError    = 0xff0000 // Red
-	ColorWarning  = 0xffa500 // Orange
-	ColorInfo     = 0x0099ff // Blue
-	ColorPrimary  = 0x7289da // Discord Blurple
+	ColorSuccess   = 0x00ff00 // Green
+	ColorError     = 0xff0000 // Red
+	ColorWarning   = 0xffa500 // Orange
+	ColorInfo      = 0x0099ff // Blue
+	ColorPrimary   = 0x7289da // Discord Blurple
 	ColorStarboard = 0xFFD700 // Gold
 )
 
@@ -235,7 +234,7 @@ func CreateBannedWordWarningEmbed(bannedWords []string, forumThreads []string) *
 	if len(bannedWords) == 1 {
 		warningText = fmt.Sprintf("⚠️ **Grammatisk merknad**\n\nOrdet **\"%s\"** er markert som feilaktig i norsk.", bannedWords[0])
 	} else {
-		warningText = fmt.Sprintf("⚠️ **Grammatisk merknad**\n\nDesse orda er markerte som feilaktige i norsk: **%s**", 
+		warningText = fmt.Sprintf("⚠️ **Grammatisk merknad**\n\nDesse orda er markerte som feilaktige i norsk: **%s**",
 			fmt.Sprintf("%v", bannedWords))
 	}
 
@@ -250,7 +249,7 @@ func CreateBannedWordWarningEmbed(bannedWords []string, forumThreads []string) *
 				uniqueThreadList = append(uniqueThreadList, threadID)
 			}
 		}
-		
+
 		if len(uniqueThreadList) == 1 {
 			warningText += fmt.Sprintf("\n\nSjå diskusjon: <#%s>", uniqueThreadList[0])
 		} else if len(uniqueThreadList) > 1 {
@@ -278,8 +277,8 @@ func CreateStarboardEmbed(msg *discordgo.Message, stars int, channelName, emoji,
 		SetColor(ColorStarboard).
 		SetAuthorFromUser(msg.Author).
 		SetFooter(fmt.Sprintf("%s %d | #%s", emoji, stars, channelName), "").
-		AddField("Opphaveleg melding", 
-			fmt.Sprintf("[Hopp til melding](https://discord.com/channels/%s/%s/%s)", 
+		AddField("Opphaveleg melding",
+			fmt.Sprintf("[Hopp til melding](https://discord.com/channels/%s/%s/%s)",
 				guildID, msg.ChannelID, msg.ID), false)
 
 	// Set timestamp from original message
@@ -287,6 +286,3 @@ func CreateStarboardEmbed(msg *discordgo.Message, stars int, channelName, emoji,
 
 	return builder.Build()
 }
-
-
-

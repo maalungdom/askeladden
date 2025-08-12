@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/database"
+	"github.com/bwmarrin/discordgo"
 )
 
 // ApprovalService handles logic for question approval.
@@ -36,7 +36,7 @@ func (s *ApprovalService) postToApprovalQueue(session *discordgo.Session, questi
 
 	// Get the author's user info
 	author, err := session.User(question.AuthorID)
-	
+
 	approvalEmbed := CreateApprovalEmbed(question.Question, "⏳ Opplysar-godkjenning: ventar", author)
 
 	approvalMessage, err := session.ChannelMessageSendEmbed(s.Bot.Config.Approval.QueueChannelID, approvalEmbed)
@@ -120,7 +120,7 @@ func (s *ApprovalService) PostPendingBannedWordToRettingChannel(bannedWordID int
 		log.Printf("Failed to get banned word for retting channel posting: %v", err)
 		return
 	}
-	
+
 	if bannedWord == nil {
 		log.Printf("No banned word found with ID %d", bannedWordID)
 		return
@@ -134,7 +134,7 @@ func (s *ApprovalService) PostPendingBannedWordToRettingChannel(bannedWordID int
 
 	// Get the hammer user info
 	hammerUser, err := s.Bot.Session.User(bannedWord.AuthorID)
-	
+
 	approvalEmbed := CreateApprovalEmbed(bannedWord.Word, "⏳ Opplysar-godkjenning: ventar\n⏳ Rettskrivar-godkjenning: ventar", hammerUser)
 
 	message, err := s.Bot.Session.ChannelMessageSendEmbed(channelID, approvalEmbed)
@@ -171,14 +171,14 @@ func (s *ApprovalService) PostBannedWordReport(session *discordgo.Session, words
 	// For newly approved banned words, always create a forum thread
 	// Check if any words already have forum threads (for logging purposes)
 	var existingThreads []string
-	
+
 	for _, word := range words {
 		isBanned, bannedWord, err := s.Bot.Database.IsBannedWord(word)
 		if err != nil {
 			log.Printf("Error checking if word '%s' is banned: %v", word, err)
 			continue
 		}
-		
+
 		if isBanned && bannedWord.ForumThreadID != nil && *bannedWord.ForumThreadID != "" {
 			// Word already exists with a forum thread
 			existingThreads = append(existingThreads, *bannedWord.ForumThreadID)
@@ -230,10 +230,10 @@ func (s *ApprovalService) PostBannedWordReport(session *discordgo.Session, words
 
 	// Create discussion embed
 	discussionEmbed := NewEmbedBuilder().
-		SetTitle("📝 Grammatikkdiskusjon: " + strings.Join(words, ", ")).
+		SetTitle("📝 Grammatikkdiskusjon: "+strings.Join(words, ", ")).
 		SetDescription("Dette ordet/desse orda har vorte rapporterte som grammatisk feil.").
 		SetColor(0xff6b35). // Orange color
-		SetAuthor("Rapportert av " + reporterName, reporterAvatarURL).
+		SetAuthor("Rapportert av "+reporterName, reporterAvatarURL).
 		AddField("📍 Opphavleg melding", originalInfo, false).
 		AddField("💡 Diskusjonsrettleiing", "• Forklar kvifor ordet er feil\n• Gje korrekte alternativ\n• Del relevante reglar eller kjelder", false).
 		SetFooter("Ver snill og diskuter på ein konstruktiv måte", "").

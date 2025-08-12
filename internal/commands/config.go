@@ -3,9 +3,9 @@ package commands
 import (
 	"fmt"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 func init() {

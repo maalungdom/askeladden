@@ -3,9 +3,9 @@ package bot
 import (
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/config"
 	"askeladden/internal/database"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Bot represents the main bot structure.
@@ -17,7 +17,7 @@ type Bot struct {
 
 // New creates a new Bot instance.
 func New(cfg *config.Config, db *database.DB, session *discordgo.Session) *Bot {
-return &Bot{
+	return &Bot{
 		Session:  session,
 		Config:   cfg,
 		Database: db,
@@ -54,4 +54,3 @@ func (b *Bot) Stop() error {
 
 // Note: Direct field access is preferred in Go for simplicity
 // Bot fields (Session, Config, Database) are exported for direct access
-

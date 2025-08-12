@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"askeladden/internal/commands"
+	"fmt"
 )
 
 func main() {
 	// Test matching
 	fmt.Println("Testing MatchCommand:")
-	
+
 	// Test main command
 	commands.MatchAndRunCommand("!hjelp", nil, nil, nil)
 

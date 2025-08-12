@@ -1,5 +1,3 @@
-
-
 package database
 
 import (
@@ -9,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"askeladden/internal/config"
 	"github.com/bwmarrin/discordgo"
 	_ "github.com/go-sql-driver/mysql"
-	"askeladden/internal/config"
 )
 
 type DatabaseIface interface {
@@ -48,9 +46,9 @@ type DatabaseIface interface {
 var _ DatabaseIface = (*DB)(nil)
 
 type DB struct {
-	conn              *sql.DB
-	tableName         string // Dynamic table name (daily_questions or daily_questions_testing)
-	bannedWordsTable  string // banned_bokmal_words or banned_bokmal_words_testing
+	conn             *sql.DB
+	tableName        string // Dynamic table name (daily_questions or daily_questions_testing)
+	bannedWordsTable string // banned_bokmal_words or banned_bokmal_words_testing
 }
 
 // New creates a new database connection
@@ -71,23 +69,23 @@ func New(cfg *config.Config) (*DB, error) {
 	}
 
 	log.Println("Database connection established successfully")
-	
+
 	// Determine table names based on config
 	tableName := "daily_questions"
 	bannedWordsTable := "banned_bokmal_words"
-	
+
 	if cfg.TableSuffix != "" {
 		tableName += cfg.TableSuffix
 		bannedWordsTable += cfg.TableSuffix
 		log.Printf("Using beta table names: %s, %s", tableName, bannedWordsTable)
 	}
-	
+
 	db := &DB{
-		conn:              conn,
-		tableName:         tableName,
+		conn:             conn,
+		tableName:        tableName,
 		bannedWordsTable: bannedWordsTable,
 	}
-	
+
 	// Create tables if they don't exist
 	log.Println("Creating database tables if they don't exist")
 	if err := db.createTables(); err != nil {
@@ -222,19 +220,19 @@ func (db *DB) runMigrations() error {
 
 // Question represents a question from the database
 type Question struct {
-	ID               int
-	Question         string
-	AuthorID         string
-	AuthorName       string
-	CreatedAt        time.Time
-	TimesAsked       int
-	LastAskedAt      *time.Time
-	MessageID        string
-	ChannelID        string
-	ApprovalStatus   string
+	ID                int
+	Question          string
+	AuthorID          string
+	AuthorName        string
+	CreatedAt         time.Time
+	TimesAsked        int
+	LastAskedAt       *time.Time
+	MessageID         string
+	ChannelID         string
+	ApprovalStatus    string
 	ApprovalMessageID *string
-	ApprovedBy       *string
-	ApprovedAt       *time.Time
+	ApprovedBy        *string
+	ApprovedAt        *time.Time
 }
 
 // BannedWord represents a banned word from the database
@@ -294,46 +292,46 @@ func (db *DB) GetQuestionByMessageID(messageID string) (*Question, error) {
 
 // ApproveQuestion updates the approval status for a question
 func (db *DB) ApproveQuestion(questionID int, approverID string) error {
-    log.Printf("Approving question ID %d by approver %s", questionID, approverID)
-    query := fmt.Sprintf("UPDATE %s SET approval_status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?", db.tableName)
-    _, err := db.conn.Exec(query, approverID, questionID)
-    if err != nil {
-        log.Printf("Failed to approve question ID %d: %v", questionID, err)
-        return err
-    }
-    log.Printf("Successfully approved question ID %d", questionID)
-    return nil
+	log.Printf("Approving question ID %d by approver %s", questionID, approverID)
+	query := fmt.Sprintf("UPDATE %s SET approval_status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?", db.tableName)
+	_, err := db.conn.Exec(query, approverID, questionID)
+	if err != nil {
+		log.Printf("Failed to approve question ID %d: %v", questionID, err)
+		return err
+	}
+	log.Printf("Successfully approved question ID %d", questionID)
+	return nil
 }
 
 // RejectQuestion updates the approval status for a question to rejected
 func (db *DB) RejectQuestion(questionID int, rejectorID string) error {
-    log.Printf("Rejecting question ID %d by rejector %s", questionID, rejectorID)
-    query := fmt.Sprintf("UPDATE %s SET approval_status = 'rejected', approved_by = ?, approved_at = NOW() WHERE id = ?", db.tableName)
-    _, err := db.conn.Exec(query, rejectorID, questionID)
-    if err != nil {
-        log.Printf("Failed to reject question ID %d: %v", questionID, err)
-        return err
-    }
-    log.Printf("Successfully rejected question ID %d", questionID)
-    return nil
+	log.Printf("Rejecting question ID %d by rejector %s", questionID, rejectorID)
+	query := fmt.Sprintf("UPDATE %s SET approval_status = 'rejected', approved_by = ?, approved_at = NOW() WHERE id = ?", db.tableName)
+	_, err := db.conn.Exec(query, rejectorID, questionID)
+	if err != nil {
+		log.Printf("Failed to reject question ID %d: %v", questionID, err)
+		return err
+	}
+	log.Printf("Successfully rejected question ID %d", questionID)
+	return nil
 }
 
 // GetPendingQuestion retrieves the next pending question for approval
 func (db *DB) GetPendingQuestion() (*Question, error) {
-    log.Println("Retrieving next pending question")
-    query := fmt.Sprintf("SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM %s WHERE approval_status = 'pending' ORDER BY created_at ASC LIMIT 1", db.tableName)
-    var q Question
-    err := db.conn.QueryRow(query).Scan(&q.ID, &q.Question, &q.AuthorID, &q.AuthorName, &q.CreatedAt, &q.TimesAsked, &q.LastAskedAt, &q.MessageID, &q.ChannelID, &q.ApprovalStatus, &q.ApprovalMessageID, &q.ApprovedBy, &q.ApprovedAt)
-    if err != nil {
-        if err == sql.ErrNoRows {
-            log.Println("No pending questions found")
-            return nil, nil
-        }
-        log.Printf("Failed to get pending question: %v", err)
-        return nil, err
-    }
-    log.Printf("Retrieved pending question ID %d: %s", q.ID, q.Question)
-    return &q, nil
+	log.Println("Retrieving next pending question")
+	query := fmt.Sprintf("SELECT id, question, author_id, author_name, created_at, times_asked, last_asked_at, message_id, channel_id, approval_status, approval_message_id, approved_by, approved_at FROM %s WHERE approval_status = 'pending' ORDER BY created_at ASC LIMIT 1", db.tableName)
+	var q Question
+	err := db.conn.QueryRow(query).Scan(&q.ID, &q.Question, &q.AuthorID, &q.AuthorName, &q.CreatedAt, &q.TimesAsked, &q.LastAskedAt, &q.MessageID, &q.ChannelID, &q.ApprovalStatus, &q.ApprovalMessageID, &q.ApprovedBy, &q.ApprovedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Println("No pending questions found")
+			return nil, nil
+		}
+		log.Printf("Failed to get pending question: %v", err)
+		return nil, err
+	}
+	log.Printf("Retrieved pending question ID %d: %s", q.ID, q.Question)
+	return &q, nil
 }
 
 // UpdateApprovalMessageID updates the approval message ID for a question
@@ -392,32 +390,31 @@ func (db *DB) GetPendingQuestionByID(questionID int) (*Question, error) {
 	return &q, nil
 }
 
-
 // GetApprovalStats returns statistics about question approvals
 func (db *DB) GetApprovalStats() (int, int, int, error) {
 	var pending, approved, rejected int
-	
+
 	// Get pending count
 	pendingQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'pending'", db.tableName)
 	err := db.conn.QueryRow(pendingQuery).Scan(&pending)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	
+
 	// Get approved count
 	approvedQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err = db.conn.QueryRow(approvedQuery).Scan(&approved)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	
+
 	// Get rejected count
 	rejectedQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'rejected'", db.tableName)
 	err = db.conn.QueryRow(rejectedQuery).Scan(&rejected)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	
+
 	return pending, approved, rejected, nil
 }
 
@@ -459,28 +456,28 @@ func (db *DB) IncrementQuestionUsage(questionID int) error {
 // GetApprovedQuestionStats returns stats about approved questions usage
 func (db *DB) GetApprovedQuestionStats() (int, int, int, error) {
 	var totalApproved, totalAsked, minAsked int
-	
+
 	// Get total approved questions count
 	totalApprovedQuery := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err := db.conn.QueryRow(totalApprovedQuery).Scan(&totalApproved)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	
+
 	// Get total times questions have been asked
 	totalAskedQuery := fmt.Sprintf("SELECT COALESCE(SUM(times_asked), 0) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err = db.conn.QueryRow(totalAskedQuery).Scan(&totalAsked)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	
+
 	// Get minimum times asked (for equal distribution tracking)
 	minAskedQuery := fmt.Sprintf("SELECT COALESCE(MIN(times_asked), 0) FROM %s WHERE approval_status = 'approved'", db.tableName)
 	err = db.conn.QueryRow(minAskedQuery).Scan(&minAsked)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	
+
 	return totalApproved, totalAsked, minAsked, nil
 }
 
@@ -600,11 +597,11 @@ func (db *DB) ApproveBannedWordByRettskrivar(wordID int, approverID string) erro
 // ApproveBannedWordCombined approves a banned word with combined role approvals
 func (db *DB) ApproveBannedWordCombined(wordID int, opplysarApprovers, rettskrivarApprovers []string) error {
 	log.Printf("Combined approval for banned word ID %d", wordID)
-	
+
 	// Convert approver lists to comma-separated strings
 	opplysarList := strings.Join(opplysarApprovers, ",")
 	rettskrivarList := strings.Join(rettskrivarApprovers, ",")
-	
+
 	query := fmt.Sprintf("UPDATE %s SET approval_status = 'fully_approved', opplysar_approved_by = ?, rettskrivar_approved_by = ?, opplysar_approved_at = NOW(), rettskrivar_approved_at = NOW() WHERE id = ? AND approval_status = 'pending'", db.bannedWordsTable)
 	result, err := db.conn.Exec(query, opplysarList, rettskrivarList, wordID)
 	if err != nil {
