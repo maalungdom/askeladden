@@ -93,7 +93,27 @@ func triggerDailyQuestion(b *bot.Bot) {
 
 	// Send the question to the default channel
 	if b.Config.Discord.DefaultChannelID != "" {
-		services.SendDailyQuestion(b, question, "@pratsam")
+		// Get guild ID from the channel
+		channel, err := b.Session.Channel(b.Config.Discord.DefaultChannelID)
+		if err != nil {
+			log.Printf("[SCHEDULER] Failed to get channel info: %v", err)
+			return
+		}
+
+		// Get pratsam role ID
+		roleID, err := services.GetPratsamRoleID(b, channel.GuildID)
+		if err != nil {
+			log.Printf("[SCHEDULER] Failed to get pratsam role ID: %v", err)
+			return
+		}
+
+		// Format role mention if role exists
+		mention := ""
+		if roleID != "" {
+			mention = "<@&" + roleID + ">"
+		}
+
+		services.SendDailyQuestion(b, question, mention)
 		log.Printf("[SCHEDULER] Daily question sent: %s", question.Question)
 	} else {
 		log.Println("[SCHEDULER] Default channel not configured.")
