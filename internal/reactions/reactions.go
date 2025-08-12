@@ -7,10 +7,11 @@ import (
 
 // Reaction defines the structure for a reaction handler.
 type Reaction struct {
-	emoji       string
-	description string
-	handler     func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot)
-	adminOnly   bool
+	emoji         string
+	description   string
+	handler       func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot)
+	removeHandler func(s *discordgo.Session, r *discordgo.MessageReactionRemove, b *bot.Bot)
+	adminOnly     bool
 }
 
 // reactions holds all registered reaction handlers.
@@ -19,10 +20,11 @@ var reactions = make(map[string]Reaction)
 // Register registers a new reaction handler.
 func Register(emoji string, description string, handler func(s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot)) Reaction {
 	r := Reaction{
-		emoji:       emoji,
-		description: description,
-		handler:     handler,
-		adminOnly:   false,
+		emoji:         emoji,
+		description:   description,
+		handler:       handler,
+		removeHandler: nil,
+		adminOnly:     false,
 	}
 	reactions[emoji] = r
 	return r
@@ -35,10 +37,25 @@ func (r Reaction) SetAdminOnly() Reaction {
 	return r
 }
 
+// SetRemoveHandler adds a handler for when the reaction is removed.
+func (r Reaction) SetRemoveHandler(handler func(s *discordgo.Session, r *discordgo.MessageReactionRemove, b *bot.Bot)) Reaction {
+	r.removeHandler = handler
+	reactions[r.emoji] = r // Update in map
+	return r
+}
+
 // MatchAndRunReaction finds and executes a reaction based on its emoji.
 func MatchAndRunReaction(emoji string, s *discordgo.Session, r *discordgo.MessageReactionAdd, b *bot.Bot) {
 	if reaction, exists := reactions[emoji]; exists {
 		reaction.handler(s, r, b)
+		return
+	}
+}
+
+// MatchAndRunReactionRemove finds and executes a reaction removal handler based on its emoji.
+func MatchAndRunReactionRemove(emoji string, s *discordgo.Session, r *discordgo.MessageReactionRemove, b *bot.Bot) {
+	if reaction, exists := reactions[emoji]; exists && reaction.removeHandler != nil {
+		reaction.removeHandler(s, r, b)
 		return
 	}
 }
