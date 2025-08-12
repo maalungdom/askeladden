@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/config"
+	"github.com/bwmarrin/discordgo"
 )
 
 // PermissionManager handles role-based permissions and approvals
@@ -91,7 +91,7 @@ func (pm *PermissionManager) CheckCombinedApproval(s *discordgo.Session, channel
 	}
 
 	state := &ApprovalState{
-		OpplysarApprovers:   make([]string, 0),
+		OpplysarApprovers:    make([]string, 0),
 		RettskrivarApprovers: make([]string, 0),
 	}
 
@@ -109,7 +109,7 @@ func (pm *PermissionManager) CheckCombinedApproval(s *discordgo.Session, channel
 		}
 
 		role := pm.GetUserRole(s, channel.GuildID, user.ID)
-		
+
 		switch role {
 		case RoleOpplysar:
 			state.HasOpplysarApproval = true
@@ -137,7 +137,7 @@ func (state *ApprovalState) IsFullyApproved() bool {
 // GetApprovalSummary returns a simple approval status summary
 func (state *ApprovalState) GetApprovalSummary(s *discordgo.Session) string {
 	var parts []string
-	
+
 	// Show opplysar approvals
 	if state.HasOpplysarApproval {
 		var opplysarNames []string
@@ -153,7 +153,7 @@ func (state *ApprovalState) GetApprovalSummary(s *discordgo.Session) string {
 	} else {
 		parts = append(parts, "⏳ Opplysar-godkjenning: ventar")
 	}
-	
+
 	// Show rettskrivar approvals
 	if state.HasRettskrivarApproval {
 		var rettskrivarNames []string
@@ -169,6 +169,6 @@ func (state *ApprovalState) GetApprovalSummary(s *discordgo.Session) string {
 	} else {
 		parts = append(parts, "⏳ Rettskrivar-godkjenning: ventar")
 	}
-	
+
 	return strings.Join(parts, "\n")
 }

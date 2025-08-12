@@ -1,11 +1,11 @@
 package main
 
 import (
+	"askeladden/internal/bot"
+	"askeladden/internal/bot/services"
 	"fmt"
 	"log"
 	"time"
-	"askeladden/internal/bot"
-	"askeladden/internal/bot/services"
 )
 
 type SchedulerState struct {
@@ -136,7 +136,7 @@ func checkAndTriggerDailyQuestion(b *bot.Bot, state *SchedulerState) {
 			reason = fmt.Sprintf("inactivity threshold (%v since last activity, before nighttime)", timeSinceLastActivity.Round(time.Minute))
 		} else if currentTime.After(eveningTime) {
 			// After nighttime - log but don't trigger
-			log.Printf("[SCHEDULER] Inactivity threshold reached (%v) but nighttime reached (%s) - waiting until tomorrow morning", 
+			log.Printf("[SCHEDULER] Inactivity threshold reached (%v) but nighttime reached (%s) - waiting until tomorrow morning",
 				timeSinceLastActivity.Round(time.Minute), b.Config.Scheduler.EveningTime)
 		}
 	}
@@ -145,7 +145,7 @@ func checkAndTriggerDailyQuestion(b *bot.Bot, state *SchedulerState) {
 		log.Printf("[SCHEDULER] Triggering daily question due to: %s", reason)
 		triggerDailyQuestion(b)
 		state.lastDailyPost = now
-		
+
 		// Reset activity timer when we post
 		state.lastActivity = now
 	}

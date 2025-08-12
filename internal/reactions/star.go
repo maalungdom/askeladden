@@ -3,9 +3,9 @@ package reactions
 import (
 	"log"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
+	"github.com/bwmarrin/discordgo"
 )
 
 // RegisterStarboardReaction registers the starboard reaction with the configured emoji
@@ -115,4 +115,3 @@ func getChannelName(s *discordgo.Session, channelID string) string {
 	}
 	return channel.Name
 }
-

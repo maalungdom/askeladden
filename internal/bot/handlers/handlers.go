@@ -5,11 +5,11 @@ import (
 	"log"
 	"strings"
 
-	"github.com/bwmarrin/discordgo"
 	"askeladden/internal/bot"
 	"askeladden/internal/bot/services"
 	"askeladden/internal/commands"
 	"askeladden/internal/reactions"
+	"github.com/bwmarrin/discordgo"
 )
 
 // Handler struct holds the bot instance and services.
@@ -25,7 +25,7 @@ func New(b *bot.Bot) *Handler {
 	botServices := &services.BotServices{
 		Approval: &services.ApprovalService{Bot: b},
 	}
-	
+
 	return &Handler{
 		Bot:      b,
 		Services: botServices,
@@ -77,7 +77,6 @@ func (h *Handler) MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 	// Check for banned words in the message
 	h.checkForBannedWords(s, m)
 }
-
 
 // ReactionAdd handles when a user reacts to a message.
 func (h *Handler) ReactionAdd(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
@@ -141,14 +140,14 @@ func (h *Handler) promptForIncorrectWord(s *discordgo.Session, r *discordgo.Mess
 // handleNonCommandMessage processes non-command messages like replies
 func (h *Handler) handleNonCommandMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	log.Printf("[DEBUG] Processing non-command message: %s", m.Content)
-	
+
 	// Check if this is a reply to a bot message (indicating user is responding to hammer emoji prompt)
 	if m.ReferencedMessage != nil && m.ReferencedMessage.Author.ID == s.State.User.ID {
 		log.Printf("[DEBUG] User %s replied to bot message with: %s", m.Author.ID, m.Content)
-		
+
 		// Check if the referenced message was a "Rapporter feil ord" prompt
-		if len(m.ReferencedMessage.Embeds) > 0 && 
-		   (strings.Contains(m.ReferencedMessage.Embeds[0].Title, "Report Incorrect Word") || strings.Contains(m.ReferencedMessage.Embeds[0].Title, "Rapporter feil ord")) {
+		if len(m.ReferencedMessage.Embeds) > 0 &&
+			(strings.Contains(m.ReferencedMessage.Embeds[0].Title, "Report Incorrect Word") || strings.Contains(m.ReferencedMessage.Embeds[0].Title, "Rapporter feil ord")) {
 			h.processIncorrectWordReport(s, m)
 		}
 	}
@@ -157,14 +156,14 @@ func (h *Handler) handleNonCommandMessage(s *discordgo.Session, m *discordgo.Mes
 // processIncorrectWordReport processes the user's response to the incorrect word prompt
 func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.MessageCreate) {
 	log.Printf("[DEBUG] Processing incorrect word report from user %s: %s", m.Author.ID, m.Content)
-	
+
 	// Parse the words from the message (comma-separated)
 	words := strings.Split(m.Content, ",")
-	
+
 	for i, word := range words {
 		words[i] = strings.TrimSpace(word)
 	}
-	
+
 	// Filter out empty words
 	var validWords []string
 	for _, word := range words {
@@ -172,19 +171,19 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 			validWords = append(validWords, word)
 		}
 	}
-	
+
 	if len(validWords) == 0 {
 		log.Printf("No valid words found in report")
 		return
 	}
-	
+
 	// Extract original hammered message info from the embed description jump link
 	originalChannelID := ""
 	originalMessageID := ""
 	if m.ReferencedMessage != nil && len(m.ReferencedMessage.Embeds) > 0 {
 		// Parse jump link from description: https://discord.com/channels/GUILD_ID/CHANNEL_ID/MESSAGE_ID
 		description := m.ReferencedMessage.Embeds[0].Description
-		
+
 		// Look for Discord jump link pattern
 		if strings.Contains(description, "discord.com/channels/") {
 			// Find the URL in the description
@@ -197,7 +196,7 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 				if endIdx != -1 {
 					urlPart = urlPart[:endIdx]
 				}
-				
+
 				// Split by / to get guild/channel/message IDs
 				parts := strings.Split(urlPart, "/")
 				if len(parts) == 3 {
@@ -207,7 +206,7 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 				}
 			}
 		}
-		
+
 		// Fallback: try to parse from footer if jump link parsing failed
 		if originalChannelID == "" && originalMessageID == "" && m.ReferencedMessage.Embeds[0].Footer != nil {
 			// Parse footer text: "CHANNEL_ID|MESSAGE_ID" or old format "Channel: CHANNEL_ID | Message: MESSAGE_ID"
@@ -234,14 +233,14 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 		}
 	}
 	log.Printf("Extracted original message info - Channel: %s, Message: %s", originalChannelID, originalMessageID)
-	
+
 	// Create a variable to hold the thread, but don't create it yet
 	// thread := h.Services.Approval.PostBannedWordReport(s, validWords, m.Author.ID, originalMessageID)
-	
+
 	// Add words to database and update with forum thread ID if one was created
 	var newWords []string
 	var existingWords []string
-	
+
 	for _, word := range validWords {
 		// Check if word already exists
 		isBanned, _, err := h.Bot.Database.IsBannedWord(word)
@@ -249,7 +248,7 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 			log.Printf("Error checking if word '%s' exists: %v", word, err)
 			continue
 		}
-		
+
 		if isBanned {
 			existingWords = append(existingWords, word)
 			// Update existing word with forum thread ID if we created one
@@ -265,7 +264,7 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 			// if thread != nil {
 			// 	forumThreadID = thread.ID
 			// }
-			
+
 			wordID, err := h.Bot.Database.AddBannedWordPending(word, "Reported via hammer emoji", m.Author.ID, m.Author.Username, "", fmt.Sprintf("%s|%s", originalChannelID, originalMessageID))
 			if err != nil {
 				log.Printf("Error adding pending banned word '%s': %v", word, err)
@@ -276,7 +275,7 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 			}
 		}
 	}
-	
+
 	// Send confirmation with appropriate messaging
 	var confirmText string
 	if len(newWords) > 0 && len(existingWords) > 0 {
@@ -286,15 +285,15 @@ func (h *Handler) processIncorrectWordReport(s *discordgo.Session, m *discordgo.
 	} else {
 		confirmText = fmt.Sprintf("Alle orda finst allereie i lista over forbodne ord: %s", strings.Join(existingWords, ", "))
 	}
-	
+
 	if len(newWords) > 0 {
 		confirmText += "\n\nEi diskusjonstråd vil bli oppretta etter godkjenning. Sjekk grammatikkforumet seinare."
 	} else {
 		confirmText += "\n\nSjå eksisterande diskusjonar i grammatikkforumet for desse orda."
 	}
-	
+
 	confirmEmbed := services.CreateSuccessEmbed("Ord rapporterte", confirmText)
-	
+
 	s.ChannelMessageSendEmbed(m.ChannelID, confirmEmbed)
 }
 
@@ -313,13 +312,13 @@ func (h *Handler) checkForBannedWords(s *discordgo.Session, m *discordgo.Message
 	for _, word := range messageWords {
 		// Clean word of punctuation
 		cleanWord := strings.Trim(word, ".,!?;:()[]{}\"'")
-		
+
 		isBanned, bannedWord, err := h.Bot.Database.IsBannedWord(cleanWord)
 		if err != nil {
 			log.Printf("Error checking banned word '%s': %v", cleanWord, err)
 			continue
 		}
-		
+
 		if isBanned {
 			foundBannedWords = append(foundBannedWords, cleanWord)
 			if bannedWord.ForumThreadID != nil {
@@ -406,5 +405,3 @@ func (h *Handler) InteractionCreate(s *discordgo.Session, i *discordgo.Interacti
 		}
 	}
 }
-
-
